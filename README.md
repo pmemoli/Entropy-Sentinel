@@ -1,6 +1,6 @@
-# Anonymous Submission for ACL 2026
+# Entropy Sentinel
 
-This repository contains the code for reproducing the experiments in our ACL submission.
+This repository contains the code for reproducing the experiments from the paper "Entropy Sentinel: Continuous LLM Accuracy Monitoring from Decoding Entropy Traces in STEM".
 
 ## Overview
 
