@@ -1,6 +1,6 @@
 # Entropy Sentinel
 
-This repository contains the code for reproducing the experiments from the paper "Entropy Sentinel: Continuous LLM Accuracy Monitoring from Decoding Entropy Traces in STEM".
+This repository contains the code for reproducing the experiments from the paper ["Entropy Sentinel: Continuous LLM Accuracy Monitoring from Decoding Entropy Traces in STEM"](https://arxiv.org/abs/2601.09001).
 
 ## Overview
 
