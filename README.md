@@ -68,33 +68,9 @@ Generates feature vectors from the stored activations and saves them to `src/dat
 ### 4. Train Classifiers
 Trains accuracy prediction models:
 ```bash
-python src/scripts/train_classifiers.py
+python -m src.scripts.train_classifiers
 ```
 Trains multiple classifier configurations (Random Forest, Logistic Regression, Neural Networks) to predict accuracy from entropy features.
-
-
-### Training Experiments
-
-#### Sensible Defaults
-Train classifiers with recommended default settings:
-```bash
-python src/scripts/train_sensible_defaults.py
-```
-
-This script trains classifiers using standard configurations across all models and benchmarks. It provides a baseline for comparison and is the recommended starting point for experiments.
-
-#### Feature Ablation Study
-Experiment with different feature subsets:
-```bash
-python src/scripts/train_different_features.py
-```
-
-This script trains classifiers with various feature combinations to identify which entropy-based features are most predictive:
-- Single features (se_sum only, max only)
-- Baseline combinations (top2_baselines)
-- Reduced feature sets
-
-Both scripts automatically skip already-trained models and provide progress tracking.
 
 ## Models and Benchmarks
 
@@ -116,28 +92,3 @@ On the following benchmarks:
 - Intermediate results are saved to allow resuming if interrupted
 - Training scripts automatically skip existing models to enable easy resumption
 
-# List all available features
-python -m src.engine.train_calibrator --list_features
-
-# Train on SEA (entropy sum) only
-python -m src.engine.train_calibrator \
-    --train_suites phi3-3b-gsm-test phi3-3b-olympiadbench-test \
-    --model_name phi3_sea_only \
-    --feature_subset SE_sum
-
-# Train on all logprob-based metrics
-python -m src.engine.train_calibrator \
-    --train_suites phi3-3b-gsm-test phi3-3b-olympiadbench-test \
-    --model_name phi3_logprob_features \
-    --feature_subset nll_avg nll_max nll_sum lntp mtp ppl
-
-# Train on all features
-python -m src.engine.train_calibrator \
-    --train_suites phi3-3b-gsm-test phi3-3b-olympiadbench-test \
-    --model_name phi3_all_features
-
-# Use legacy feature names (backwards compatible)
-python -m src.engine.train_calibrator \
-    --train_suites phi3-3b-gsm-test \
-    --model_name phi3_legacy \
-    --feature_subset se_sum max mean

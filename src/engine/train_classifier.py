@@ -31,6 +31,12 @@ features_names = [
     "skewness",
     "kurtosis",
     "se_sum",
+    "nll_avg",
+    "nll_max",
+    "nll_sum",
+    "lntp",
+    "mtp",
+    "ppl",
 ]
 
 
@@ -41,12 +47,16 @@ def run_training(
     balance_classes: bool = True,
     calibrate: bool = False,
     feature_subset: list[str] | None = None,
+    suite_cache: dict | None = None,
 ):
     X_list = []
     y_list = []
     for suite in train_suites:
-        data_path = f"src/data/features/{suite}.pt"
-        raw_data = torch.load(data_path)
+        if suite_cache is not None and suite in suite_cache:
+            raw_data = suite_cache[suite]
+        else:
+            data_path = f"src/data/features/{suite}.pt"
+            raw_data = torch.load(data_path)
 
         if "test" in suite:
             # split test suites into train and test halves (80-20 split)
@@ -131,7 +141,7 @@ def run_training(
         param_grid=param_grid,
         scoring="roc_auc",
         cv=cv_folds,
-        verbose=1,
+        verbose=0,
         n_jobs=-1,
     )
 
@@ -144,7 +154,7 @@ def run_training(
     if calibrate:
         cv_folds = min(5, min_class_count)
         calibrator = CalibratedClassifierCV(
-            estimator=trained_model, method="isotonic", cv=cv_folds
+            estimator=trained_model, method="sigmoid", cv=cv_folds
         )
         calibrator.fit(X, y)
         trained_model = calibrator

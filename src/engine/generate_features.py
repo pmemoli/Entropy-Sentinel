@@ -5,10 +5,11 @@ import argparse
 import os
 
 
-def compute_features(profile):
+def compute_features(profile, selected_logprobs):
     """
     Input:
         profile: Tensor of shape [sequence_length]
+        selected_logprobs: Tensor of shape [sequence_length]
     Output:
         metrics: Tensor of shape [num_statistical_summaries]
     """
@@ -28,10 +29,35 @@ def compute_features(profile):
     skewness = torch.mean(centered**3) / (std**3 + 1e-8)
     kurtosis = torch.mean(centered**4) / (std**4 + 1e-8)
 
+    # Baseline UQ metrics
     se_sum = torch.sum(profile)
+    nll_sum = torch.sum(-selected_logprobs)
+    nll_avg = torch.mean(-selected_logprobs)
+    nll_max = torch.max(-selected_logprobs)
+    lntp = torch.sum(-selected_logprobs * torch.log(-selected_logprobs + 1e-8))
+    mtp = torch.max(-selected_logprobs * torch.log(-selected_logprobs + 1e-8))
+    ppl = torch.exp(nll_avg)
 
     features = torch.tensor(
-        [mean, std, max, q10, q25, q50, q75, q90, skewness, kurtosis, se_sum],
+        [
+            mean,
+            std,
+            max,
+            q10,
+            q25,
+            q50,
+            q75,
+            q90,
+            skewness,
+            kurtosis,
+            se_sum,
+            nll_avg,
+            nll_max,
+            nll_sum,
+            lntp,
+            mtp,
+            ppl,
+        ],
     )
 
     return features
@@ -56,8 +82,9 @@ def run(
 
         for tensor_item in tensor:
             entropy_profile = tensor_item["entropy_profile"].to(torch.float32)
+            selected_logprobs = tensor_item["selected_logprobs"]
 
-            features = compute_features(entropy_profile)
+            features = compute_features(entropy_profile, selected_logprobs)
             feature_list.append(
                 {
                     "features:": features,
@@ -85,7 +112,6 @@ def parse_arguments():
 
 
 def main():
-    """Main entry point for command line execution."""
     try:
         args = parse_arguments()
 
