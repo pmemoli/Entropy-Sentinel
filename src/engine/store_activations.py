@@ -39,8 +39,13 @@ def run(
     suite: str,
     result_path: str,
     split: Literal["train", "test"] = "train",
-    max_length: int = 2048,
+    max_length: int = 4096,
+    seed: int = 42,
+    temperature: float = 0.5,
+    max_samples: int | None = None,
 ):
+    # Fixed global seed for reproducible item selection — `seed` is only
+    # threaded into the vLLM sampler so different runs share the same items.
     set_seed(42)
 
     file_path = f"{result_path}/{suite}"
@@ -53,6 +58,9 @@ def run(
 
     ScenarioClass = REGISTRY[dataset_name]
     scenario = ScenarioClass(split=split, file_path=file_path)
+
+    if max_samples is not None:
+        scenario.items = scenario.items[:max_samples]
 
     if not scenario.has_next():
         print("No samples found in the scenario. Exiting.")
@@ -82,7 +90,7 @@ def run(
         model=model_name,
         trust_remote_code=False,
         dtype="bfloat16",
-        seed=42,
+        seed=seed,
         gpu_memory_utilization=0.90,
         max_logprobs=logprobs,
         max_model_len=4096,
@@ -90,10 +98,10 @@ def run(
     )
 
     sampling_params = SamplingParams(
-        temperature=0.5,
+        temperature=temperature,
         max_tokens=max_length,
         logprobs=logprobs,
-        seed=42,
+        seed=seed,
     )
 
     print("Starting generation...")
@@ -180,6 +188,14 @@ def parse_arguments():
     parser.add_argument("--max_length", type=int, default=2048)
     parser.add_argument("--device", type=str, default="cuda:0")
     parser.add_argument("--split", type=str, default="test")
+    parser.add_argument("--seed", type=int, default=42)
+    parser.add_argument("--temperature", type=float, default=0.5)
+    parser.add_argument(
+        "--max_samples",
+        type=int,
+        default=None,
+        help="Cap the number of items from the scenario (None = all).",
+    )
     return parser.parse_args()
 
 
@@ -192,6 +208,9 @@ def main():
         result_path=args.result_path,
         split=args.split,
         max_length=args.max_length,
+        seed=args.seed,
+        temperature=args.temperature,
+        max_samples=args.max_samples,
     )
 
 
