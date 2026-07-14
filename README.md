@@ -91,3 +91,5 @@ On the following benchmarks:
 - The scripts process multiple configurations and may take several hours to complete
 - Intermediate results are saved to allow resuming if interrupted
 - Training scripts automatically skip existing models to enable easy resumption
+import numpy as np
+from scipy.stats import spearmanr
