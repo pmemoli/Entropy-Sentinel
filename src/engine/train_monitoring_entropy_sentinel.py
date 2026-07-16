@@ -8,11 +8,8 @@ from sklearn.model_selection import GridSearchCV
 
 import joblib
 import argparse
-import os
 
 from typing import Literal
-
-from .generate_stem_features import compute_features
 
 Model = Literal["logistic_regression", "random_forest"]
 
@@ -82,39 +79,6 @@ def fit_logistic_regression(X, y, steps: int = 2000, lr: float = 0.01):
     return LogisticRegressionES(linear)
 
 
-def load_suite(suite: str):
-    """One sample per judged assistant response: the monitored model's entropy
-    features against the judge's score for that same response."""
-    tensor_path = f"src/data/runs/{suite}"
-
-    samples = []
-    for file in os.listdir(tensor_path):
-        tensor = torch.load(f"{tensor_path}/{file}")
-
-        for tensor_item in tensor:
-            for message in tensor_item["messages"]:
-                if message["role"] != "assistant":
-                    continue
-
-                # Conversations the judge skipped carry no score.
-                if message.get("judge_score") is None:
-                    continue
-
-                entropy_profile = message["entropy_profile"].to(torch.float32)
-                selected_logprobs = message["selected_logprobs"]
-
-                samples.append(
-                    {
-                        "features:": compute_features(
-                            entropy_profile, selected_logprobs
-                        ),
-                        "judge_score": message["judge_score"],
-                    }
-                )
-
-    return samples
-
-
 def run_training(
     train_suites: list[str],
     model: Model,
@@ -128,7 +92,8 @@ def run_training(
         if suite_cache is not None and suite in suite_cache:
             raw_data = suite_cache[suite]
         else:
-            raw_data = load_suite(suite)
+            data_path = f"src/data/features/{suite}.pt"
+            raw_data = torch.load(data_path)
 
         if "test" in suite:
             # split test suites into train and test halves (80-20 split)

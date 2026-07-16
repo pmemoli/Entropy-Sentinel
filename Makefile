@@ -1,4 +1,4 @@
-PYTHON ?= python3
+PYTHON ?= uv run python
 
 run-stem:
 	bash src/scripts/run_stem_scenarios.sh
@@ -15,8 +15,8 @@ classifiers-stem:
 audit-stem:
 	$(PYTHON) -m src.scripts.audit_stem $(AUDIT_ARGS)
 
-sensitivity:
-	bash src/scripts/sensitivity_sweep.sh
+sensitivity-stem:
+	bash src/scripts/stem_sensitivity_sweep.sh
 
 run-monitoring:
 	bash src/scripts/run_monitoring_scenarios.sh
@@ -24,7 +24,15 @@ run-monitoring:
 judge-monitoring:
 	$(PYTHON) -m src.scripts.judge_monitoring_runs
 
+features-monitoring:
+	$(PYTHON) -m src.scripts.generate_monitoring_features
+
+classifiers-monitoring:
+	$(PYTHON) -m src.scripts.train_monitoring_classifiers
+
 pipeline-stem: run-stem judge-stem features-stem
+
+pipeline-monitoring: run-monitoring judge-monitoring features-monitoring
 
 push:
 	bash sync/sync.sh
