@@ -8,6 +8,7 @@ from .svamp import SVAMP
 from .theoremqa import THEOREMQA
 from .olympiadbench import OLYMPIADBENCH
 from .matscibench import MATSCIBENCH
+from .wildbench import WILDBENCH
 
 REGISTRY = {
     "gsm8k": GSM8K,
@@ -20,4 +21,8 @@ REGISTRY = {
     "theoremqa": THEOREMQA,
     "olympiadbench": OLYMPIADBENCH,
     "matscibench": MATSCIBENCH,
+}
+
+MONITORING_REGISTRY = {
+    "wildbench": WILDBENCH,
 }

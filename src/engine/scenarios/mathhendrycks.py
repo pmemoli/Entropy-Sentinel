@@ -1,12 +1,12 @@
 from datasets.utils.py_utils import Literal
-from .scenario import Scenario
+from .stem_scenario import STEMScenario
 import datasets
 import random
 import torch
 import os
 
 
-class MATH(Scenario):
+class MATH(STEMScenario):
     def __init__(
         self,
         split: Literal["train", "test"] = "test",

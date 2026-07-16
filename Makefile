@@ -1,30 +1,30 @@
 PYTHON ?= python3
 
-store:
-	bash src/scripts/store_activations.sh
+run-stem:
+	bash src/scripts/run_stem_scenarios.sh
 
-features:
-	bash src/scripts/generate_features.sh
+judge-stem:
+	$(PYTHON) -m src.scripts.judge_stem_runs
 
-evaluate:
-	bash src/scripts/evaluate_runs.sh
+features-stem:
+	$(PYTHON) -m src.scripts.generate_stem_features
 
-baselines:
-	$(PYTHON) -m src.scripts.train_baselines
+classifiers-stem:
+	$(PYTHON) -m src.scripts.train_stem_classifiers
 
-classifiers:
-	$(PYTHON) -m src.scripts.train_classifiers
-
-audit:
-	$(PYTHON) src/scripts/audit.py $(AUDIT_ARGS)
+audit-stem:
+	$(PYTHON) -m src.scripts.audit_stem $(AUDIT_ARGS)
 
 sensitivity:
 	bash src/scripts/sensitivity_sweep.sh
 
-train-extremes-intermediate:
-	$(PYTHON) -m src.scripts.train_extremes_intermediate
+run-monitoring:
+	bash src/scripts/run_monitoring_scenarios.sh
 
-pipeline: store features evaluate
+judge-monitoring:
+	$(PYTHON) -m src.scripts.judge_monitoring_runs
+
+pipeline-stem: run-stem judge-stem features-stem
 
 push:
 	bash sync/sync.sh

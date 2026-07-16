@@ -1,10 +1,14 @@
-cot_prompt = """Solve the following problem step by step, then provide the final numerical answer.
+import json
+import os
 
-Question: {question}
-
-Solution:"""
+_PROMPTS_PATH = os.path.join(os.path.dirname(__file__), "prompts.jsonl")
 
 
-task_prompts = {
-    "cot": cot_prompt,
-}
+def load_prompt(name: str) -> dict:
+    with open(_PROMPTS_PATH) as f:
+        for line in f:
+            entry = json.loads(line)
+            if entry["name"] == name:
+                return entry
+
+    raise KeyError(f"No prompt named '{name}' in {_PROMPTS_PATH}")

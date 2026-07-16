@@ -1,4 +1,4 @@
-from .scenario import Scenario
+from .stem_scenario import STEMScenario
 import datasets
 import random
 import torch
@@ -7,7 +7,7 @@ import os
 from typing import Literal
 
 
-class SCIBENCH(Scenario):
+class SCIBENCH(STEMScenario):
     def __init__(
         self,
         split: Literal["train", "test"] = "test",

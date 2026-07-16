@@ -4,7 +4,7 @@
 #   - temperature: deployment-low to above-paper
 #   - seed:        sampling-noise at fixed temperature
 # Each (temperature, seed) cell shares the same 500 MATH items because
-# store_activations.py pins item selection to a fixed RNG independent of --seed.
+# run_stem_scenarios.py pins item selection to a fixed RNG independent of --seed.
 set -euo pipefail
 
 MODEL="microsoft/Phi-3.5-mini-instruct"
@@ -22,7 +22,7 @@ for temperature in "${TEMPERATURES[@]}"; do
     suite="phi3-3b-math-sensitivity-t${temperature}-s${seed}"
     echo "=== ${suite} (T=${temperature}, seed=${seed}) ==="
 
-    python3 -m src.engine.store_activations \
+    python3 -m src.engine.run_stem_scenarios \
       --dataset_name "${DATASET}" \
       --split "${SPLIT}" \
       --model_name "${MODEL}" \

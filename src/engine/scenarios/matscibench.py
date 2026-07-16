@@ -1,12 +1,12 @@
 from typing import Literal
-from .scenario import Scenario
+from .stem_scenario import STEMScenario
 import datasets
 import random
 import torch
 import os
 
 
-class MATSCIBENCH(Scenario):
+class MATSCIBENCH(STEMScenario):
     def __init__(
         self,
         split: Literal["train", "test"] = "test",
