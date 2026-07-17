@@ -208,9 +208,9 @@ Same thing but with raw length. Ideally they differ considerably.
 
 ## TODO
 
-1. Organizar bien los scripts.
-2. Sincronizar archivos con la compu de luciano.
-3. Armar tests para saber que todo anda bien.
+1. Sincronizar archivos con la compu de luciano.
+2. Armar tests para saber que todo anda bien.
+3. Correr experimentos de la parte 2.
 
 Para el domingo:
 

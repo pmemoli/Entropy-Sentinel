@@ -1,3 +1,6 @@
+include .env
+export
+
 PYTHON ?= uv run python
 
 run-stem:
@@ -34,11 +37,25 @@ pipeline-stem: run-stem judge-stem features-stem
 
 pipeline-monitoring: run-monitoring judge-monitoring features-monitoring
 
-push:
-	bash sync/sync.sh
+sync:
+	mutagen sync create --name=entropy-sentinel \
+	  --ignore=.venv --ignore=.pytest_cache --ignore=.git --ignore=.teamviewer --ignore=.env \
+	  ~/academy/papers/entropy_sentinel \
+	  $(HOST):~/Documents/entropy_is_enough
 
-pull:
-	bash sync/download.sh
+first-sync:
+	mutagen sync create --name=entropy-sentinel \
+	  --sync-mode=one-way-replica \
+	  --ignore=.venv --ignore=.pytest_cache --ignore=.git --ignore=.teamviewer --ignore=.env \
+	  ~/academy/papers/entropy_sentinel \
+	  $(HOST):~/Documents/entropy_is_enough
+
+terminate-sync:
+	mutagen sync terminate entropy-sentinel
 
 ssh:
-	bash sync/ssh.sh
+	ssh $(HOST)
+
+.PHONY: run-stem judge-stem features-stem classifiers-stem audit-stem sensitivity-stem \
+		run-monitoring judge-monitoring features-monitoring classifiers-monitoring \
+		pipeline-stem pipeline-monitoring sync first-sync terminate-sync
