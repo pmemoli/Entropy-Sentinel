@@ -1,4 +1,8 @@
-from .core.types import MonitoringGenerationResult, MonitoringMessage
+from .core.types import (
+    MonitoringGenerationResult,
+    MonitoringMessage,
+    MonitoringInput,
+)
 import argparse
 import torch
 import time
@@ -9,13 +13,13 @@ import traceback
 from vllm import LLM, SamplingParams
 from transformers import set_seed
 from datasets.utils.py_utils import Literal
+from dotenv import load_dotenv
 
 
 from .core.computations import compute_entropy_profile
 from .scenarios import MONITORING_REGISTRY
 
-os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
-os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+load_dotenv()
 
 epsilon = 1e-10
 
@@ -116,83 +120,12 @@ def run(
         )
 
         try:
-            batch_results: list[MonitoringGenerationResult] = [
-                {
-                    "messages": [],
-                    "primary_category": sample["primary_category"],
-                    "secondary_categories": sample["secondary_categories"],
-                }
-                for sample in batch_samples
-            ]
-
-            # Conversations are replayed one turn at a time: each active one
-            # gets its next question appended, then the whole turn is generated
-            # in a single batch. Conversations run out of questions at
-            # different depths, so the active set shrinks as the turn grows.
-            max_turns = max(len(sample["questions"]) for sample in batch_samples)
-
-            for turn in range(max_turns):
-                active = [
-                    i
-                    for i, sample in enumerate(batch_samples)
-                    if turn < len(sample["questions"])
-                ]
-                if not active:
-                    break
-
-                batch_messages = []
-                for i in active:
-                    question = batch_samples[i]["questions"][turn]
-
-                    user_message: MonitoringMessage = {
-                        "role": "user",
-                        "content": question,
-                        "token_ids": tokenizer.encode(question),
-                        "entropy_profile": [],
-                        "selected_logprobs": [],
-                    }
-                    batch_results[i]["messages"].append(user_message)
-
-                    batch_messages.append(
-                        [
-                            {"role": message["role"], "content": message["content"]}
-                            for message in batch_results[i]["messages"]
-                        ]
-                    )
-
-                print(
-                    f"Turn {turn + 1}/{max_turns} — {len(active)} active conversations"
-                )
-
-                request_outputs = llm.chat(
-                    messages=batch_messages,  # type: ignore
-                    sampling_params=sampling_params,
-                    use_tqdm=True,
-                )
-
-                for i, output in zip(active, request_outputs):
-                    generated_text = output.outputs[0].text
-                    logprobs_data = output.outputs[0].logprobs
-                    token_ids = output.outputs[0].token_ids
-
-                    selected_logprobs = [
-                        logprobs_data[t][token_id].logprob
-                        for t, token_id in enumerate(token_ids)
-                    ]
-                    entropy_profile = compute_entropy_profile(logprobs_data)
-
-                    assistant_message: MonitoringMessage = {
-                        "role": "assistant",
-                        "content": generated_text,
-                        "token_ids": list(token_ids),
-                        "entropy_profile": entropy_profile.cpu(),
-                        "selected_logprobs": torch.tensor(
-                            selected_logprobs
-                        ).cpu(),
-                    }
-                    batch_results[i]["messages"].append(assistant_message)
-
-                del request_outputs
+            batch_results = generate_conversations(
+                llm=llm,
+                tokenizer=tokenizer,
+                samples=batch_samples,
+                sampling_params=sampling_params,
+            )
 
             store_results(batch_results)
             amount_processed += len(batch_samples)
@@ -204,10 +137,96 @@ def run(
         except Exception as e:
             print(f"Error processing batch: {str(e)}")
             print(traceback.format_exc())
-            break
+            continue
+            # break
 
     print(f"Benchmark completed. Results saved to {file_path}")
     print(f"Total samples processed: {amount_processed}")
+
+
+def generate_conversations(
+    llm: LLM,
+    tokenizer: any,
+    samples: list[MonitoringInput],
+    sampling_params: SamplingParams,
+) -> list[MonitoringGenerationResult]:
+    results: list[MonitoringGenerationResult] = [
+        {
+            "messages": [],
+            "primary_category": sample["primary_category"],
+            "secondary_categories": sample["secondary_categories"],
+        }
+        for sample in samples
+    ]
+
+    # max_turns = max(len(sample["questions"]) for sample in samples)
+    max_turns = 2  # fixing this for the conversation to fit in the GPU
+
+    for turn in range(max_turns):
+        active = [
+            i
+            for i, sample in enumerate(samples)
+            if turn < len(sample["questions"])
+        ]
+        if not active:
+            break
+
+        batch_messages = []
+        for i in active:
+            question = samples[i]["questions"][turn]
+
+            user_message: MonitoringMessage = {
+                "role": "user",
+                "content": question,
+                "token_ids": tokenizer.encode(question),
+                "entropy_profile": [],
+                "selected_logprobs": [],
+            }
+            results[i]["messages"].append(user_message)
+
+            batch_messages.append(
+                [
+                    {
+                        "role": message["role"],
+                        "content": message["content"],
+                    }
+                    for message in results[i]["messages"]
+                ]
+            )
+
+        print(
+            f"Turn {turn + 1}/{max_turns} — {len(active)} active conversations"
+        )
+
+        request_outputs = llm.chat(
+            messages=batch_messages,  # type: ignore
+            sampling_params=sampling_params,
+            use_tqdm=True,
+        )
+
+        for i, output in zip(active, request_outputs):
+            generated_text = output.outputs[0].text
+            logprobs_data = output.outputs[0].logprobs
+            token_ids = output.outputs[0].token_ids
+
+            selected_logprobs = [
+                logprobs_data[t][token_id].logprob
+                for t, token_id in enumerate(token_ids)
+            ]
+            entropy_profile = compute_entropy_profile(logprobs_data)
+
+            assistant_message: MonitoringMessage = {
+                "role": "assistant",
+                "content": generated_text,
+                "token_ids": list(token_ids),
+                "entropy_profile": entropy_profile.cpu(),
+                "selected_logprobs": torch.tensor(selected_logprobs).cpu(),
+            }
+            results[i]["messages"].append(assistant_message)
+
+        del request_outputs
+
+    return results
 
 
 def parse_arguments():

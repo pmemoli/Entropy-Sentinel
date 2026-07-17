@@ -9,13 +9,12 @@ import traceback
 from vllm import LLM, SamplingParams
 from transformers import set_seed
 from datasets.utils.py_utils import Literal
-
+from dotenv import load_dotenv
 
 from .core.computations import compute_entropy_profile
 from .scenarios import REGISTRY
 
-os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
-os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+load_dotenv()
 
 epsilon = 1e-10
 

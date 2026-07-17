@@ -22,7 +22,7 @@ for temperature in "${TEMPERATURES[@]}"; do
     suite="phi3-3b-math-sensitivity-t${temperature}-s${seed}"
     echo "=== ${suite} (T=${temperature}, seed=${seed}) ==="
 
-    python3 -m src.engine.run_stem_scenarios \
+    uv run python -m src.engine.run_stem_scenarios \
       --dataset_name "${DATASET}" \
       --split "${SPLIT}" \
       --model_name "${MODEL}" \

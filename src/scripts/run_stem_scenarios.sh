@@ -125,7 +125,7 @@ for ((i = 0; i < ${#presets[@]}; i+=4)); do
 
     echo "Processing suite: ${suite}"
 
-    python -m src.engine.run_stem_scenarios \
+    uv run python -m src.engine.run_stem_scenarios \
       --dataset_name "${dataset_name}" \
       --split "${split}" \
       --model_name "${model_name}" \

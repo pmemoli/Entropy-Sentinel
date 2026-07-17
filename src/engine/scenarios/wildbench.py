@@ -21,8 +21,6 @@ class WILDBENCH(MonitoringScenario):
     ):
         print("Loading Wildbench dataset...")
 
-        # Results are only stored once a conversation's turns are all done, so
-        # anything already in the run directory is complete and can be skipped.
         completed = set()
         if file_path is not None and os.path.isdir(file_path):
             for file in os.listdir(file_path):

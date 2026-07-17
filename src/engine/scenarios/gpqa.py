@@ -8,7 +8,7 @@ from typing import Literal
 from huggingface_hub import login
 from dotenv import load_dotenv
 
-load_dotenv()
+load_dotenv(override=True)
 
 token = os.getenv("HF_TOKEN")
 if token:

@@ -1,6 +1,9 @@
 include .env
 export
 
+CUDA_DEVICE_ORDER ?= PCI_BUS_ID
+CUDA_VISIBLE_DEVICES ?= 0
+
 PYTHON ?= uv run python
 
 run-stem:

@@ -71,7 +71,9 @@ def check_results():
 
         roles = [message["role"] for message in messages]
         if roles != ["user", "assistant"] * (len(roles) // 2):
-            problems.append(f"result {i}: roles not alternating user/assistant: {roles}")
+            problems.append(
+                f"result {i}: roles not alternating user/assistant: {roles}"
+            )
 
         for j, message in enumerate(messages):
             if message["role"] != "assistant":
@@ -84,6 +86,7 @@ def check_results():
             if n_tokens == 0:
                 problems.append(f"result {i} message {j}: empty generation")
                 continue
+
             # One entropy value and one logprob per generated token is what the
             # feature extraction downstream assumes.
             if len(profile) != n_tokens:
@@ -95,15 +98,24 @@ def check_results():
                     f"result {i} message {j}: {len(logprobs)} logprobs for {n_tokens} tokens"
                 )
             if not torch.isfinite(profile).all():
-                problems.append(f"result {i} message {j}: non-finite entropy values")
+                problems.append(
+                    f"result {i} message {j}: non-finite entropy values"
+                )
             if (profile < 0).any():
-                problems.append(f"result {i} message {j}: negative entropy values")
+                problems.append(
+                    f"result {i} message {j}: negative entropy values"
+                )
 
     if not problems:
         turns = sum(
-            1 for r in results for m in r["messages"] if m["role"] == "assistant"
+            1
+            for r in results
+            for m in r["messages"]
+            if m["role"] == "assistant"
         )
-        print(f"\n{len(results)} results, {turns} assistant turns, all well-formed.")
+        print(
+            f"\n{len(results)} results, {turns} assistant turns, all well-formed."
+        )
 
     return problems
 
@@ -121,7 +133,9 @@ def main():
         print(f"{SUITE_DIR} already has results; remove it first.")
         sys.exit(1)
 
-    print(f"Running {DATASET} on {MODEL}, {N_SAMPLES} samples -> {SUITE_DIR}\n")
+    print(
+        f"Running {DATASET} on {MODEL}, {N_SAMPLES} samples -> {SUITE_DIR}\n"
+    )
 
     try:
         result = run_scenarios()
@@ -147,5 +161,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
