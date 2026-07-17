@@ -208,9 +208,8 @@ Same thing but with raw length. Ideally they differ considerably.
 
 ## TODO
 
-1. Sincronizar archivos con la compu de luciano.
-2. Armar tests para saber que todo anda bien.
-3. Correr experimentos de la parte 2.
+1. Correr experimentos de la parte 2.
+2. Reconstruir resultados del exp 1 bien y re-escribir la parte 1 del paper.
 
 Para el domingo:
 
@@ -227,6 +226,7 @@ Posterior:
 - En base a lo que de, correr para el resto de benchmarks.
 - En base a lo que de, correr para el resto de modelos (minimo 2+).
 
+- Estaria bueno pensar un buen estudio de temperatura para el sentinel.
 - Retocar el paper.
 - Remirar el codigo y dejarlo bien.
 

@@ -4,7 +4,7 @@ import torch
 import argparse
 import os
 
-from .generate_stem_features import compute_features
+from .core.computations import compute_features
 
 
 def run(
