@@ -7,6 +7,8 @@ The problem we are fundamentally solving is one of estimating OOD performance ba
 
 OOD performance estimation was studied specifically for foundational models by Saxena et. al (2024), based on the observation that ensembles of neural networks present "agreement on the line" (baek. et al, 2022). The problem with this approach is that it requires multiple inferences, making it unsuitable to our monitoring use case.
 
+SURVEY: https://arxiv.org/pdf/2201.04234 
+
 ### Uncertainty Quantification
 
 Following recent uncertainty quantification surveys (shorinwa, bouchard, xiaoou, huang, tonmoy), methods are typically classified according to their objective and access to the models internals.
@@ -111,30 +113,25 @@ We want to explore how capable entropy sentinel is at detecting **correctness** 
 
 ### Evaluation for monitoring (distilling llm as a judge).
 
-We want to study the capability of entropy sentinel to emulate LLM-as-a-judge scores and rankings when monitoring real production traces grouped by category. Emulating the setup of the previous experiment, we select X benchmarks that measure the capabilities of language models for multi-turn chats, already grouped by category (math, reasoning, debugging, etc.). This situation emulates real monitoring for chatbots, where conversations are grouped by category post-hoc and monitored with some framework such as langfuse.
+We want to study the capability of entropy sentinel to emulate LLM-as-a-judge scores and rankings on production traces grouped by category. Emulating the setup of the previous experiment, we select X benchmarks that measure the capabilities of language models for multi-turn chats, already grouped by category (math, reasoning, debugging, etc.). This situation emulates real monitoring for chatbots, where conversations are grouped by category post-hoc and monitored with some framework such as langfuse.
 
-To emulate a real context, where a judge evaluates OOD samples from live traffic, we train on some benchmarks and eval in others (exactly like in the previous experiment).
-
-The RQ is simple: "Can entropy sentinel learn to rank LLM-as-a-judge scores for OOD sources?"
+The RQ is: "Can entropy sentinel learn to rank LLM-as-a-judge scores for OOD domains?"
 
 #### Models
 
-Chose 3-4 models to keep costs down spanning representative sizes:
-
-- Phi 3.5-mini (3.6B)
-- Ministral 3 (8B)
-- Gemma 3 (12B)
-- GPT OSS (20B)
-
-Maybe the other 5 too, but not necessarily...
+Same 9 models, as before.
 
 #### Benchmarks
+
+We are evaluating the model on WildBench, a dataset of ~1000 curated samples from chatbot arena already clustered by 11 categories.
+
+Original idea:
 
 1. WildBench (1k)
 2. MT-Bench (80x2)
 3. Arena-Hard-Auto (500)
 
-And maybe:
+And maybe (probably I really should...):
 
 4. BIGGEN-Bench (765)
 5. No Robots (10k) (sample just 1000 from each category)
@@ -143,11 +140,29 @@ So about 2k samples per model...
 
 #### Evaluation protocol
 
-As with STEM QA, we train on some benchmarks and evaluate with others. 
+Considering classifier choice was a second order decision compared to training composition, we fix the best performing model (RandomForest) from the previous section and sweep all **categories** 1C11...7C11 for training, and evaluate on the remainder ones. This tests the capability of ES of generalizing to OOD domains, and lets us study what training composition performs best.
 
-As a first step, I'm training on WildBench and evaluating on other benchmarks (maybe just MT-Bench to start, gruped by category).
+The only difference with the STEM QA protocol is that we dont evaluate on a separate test split for the training categories due to limited category size.
 
-Maybe i'm also exploring other probes, but later.
+##### Can it agree with the judge on OOD domains? 
+
+We show spearman (and aee?) median-iqr for k = 1...7 and have a final LOCO (leave one category out) row. 
+
+[TABLE]
+
+[LOCO GRAPH]
+
+##### What are the main composition factors driving performance
+
+[Same U shape weighted-difficulty graph]
+
++ best performing combinations in appendix 
+
+##### Takeaways
+
+[Once I have results]
+
+#### Prompts
 
 We'll run each benchmark with `single-v1`:
 

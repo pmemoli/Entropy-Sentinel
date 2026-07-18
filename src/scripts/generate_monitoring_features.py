@@ -1,8 +1,8 @@
 from src.engine.generate_monitoring_features import run
 
 SUITES = [
-    # phi3-3b
     "phi3-3b-wildbench-test",
+    "phi3-3b-mtbench-test",
 ]
 
 

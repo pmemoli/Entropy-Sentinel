@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 
 from .core.prompts import load_prompt
 
-load_dotenv()
+load_dotenv(override=True)
 api_key = os.getenv("XAI_API_KEY")  # type: ignore
 
 STEM_JUDGE_PROMPT = load_prompt("stem-judge")

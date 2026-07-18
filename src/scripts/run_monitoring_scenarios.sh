@@ -1,4 +1,10 @@
+export VLLM_USE_V1=0
+
 presets=(
+    # "arenahard" "test" "microsoft/Phi-3.5-mini-instruct" "phi3-3b-arenahard-test"
+    # "mtbench" "test" "microsoft/Phi-3.5-mini-instruct" "phi3-3b-mtbench-test"
+    "wildbench" "test" "mistralai/Ministral-8B-Instruct-2410" "ministral3-8b-wildbench-test"
+    "wildbench" "test" "google/gemma-3-12b-it" "gemma3-12b-wildbench-test"
     "wildbench" "test" "microsoft/Phi-3.5-mini-instruct" "phi3-3b-wildbench-test"
 )
 

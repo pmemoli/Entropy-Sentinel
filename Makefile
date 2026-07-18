@@ -42,6 +42,7 @@ pipeline-monitoring: run-monitoring judge-monitoring features-monitoring
 
 sync:
 	mutagen sync create --name=entropy-sentinel \
+	  --sync-mode=two-way-resolved \
 	  --ignore=.venv --ignore=.pytest_cache --ignore=.git --ignore=.teamviewer --ignore=.env \
 	  ~/academy/papers/entropy_sentinel \
 	  $(HOST):~/Documents/entropy_is_enough

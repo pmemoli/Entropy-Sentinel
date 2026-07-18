@@ -7,7 +7,7 @@ import os
 from typing import Literal
 
 
-class WILDBENCH(MonitoringScenario):
+class MTBENCH(MonitoringScenario):
     def __init__(
         self,
         split: Literal["train", "test"] = "test",
@@ -19,7 +19,7 @@ class WILDBENCH(MonitoringScenario):
     def load_dataset(
         self, split: Literal["train", "test"], file_path: str | None = None
     ):
-        print("Loading Wildbench dataset...")
+        print("Loading MT-bench dataset...")
 
         completed = set()
         if file_path is not None and os.path.isdir(file_path):
@@ -40,22 +40,18 @@ class WILDBENCH(MonitoringScenario):
 
             print(f"Skipping {len(completed)} completed conversations.")
 
-        dataset = datasets.load_dataset("allenai/WildBench", "v2")
-        for item in list(dataset["test"]):
-            questions = [
-                turn["content"].strip()
-                for turn in item["conversation_input"]
-                if turn["role"] == "user"
-            ]
+        dataset = datasets.load_dataset("philschmid/mt-bench")
+        for item in list(dataset["train"]):
+            questions = [turn.strip() for turn in item["turns"]]
 
-            if not questions or tuple(questions[:2]) in completed:
+            if not questions or tuple(questions) in completed:
                 continue
 
             self.items.append(
                 {
                     "questions": questions,
-                    "primary_category": str(item["primary_tag"]),
-                    "secondary_categories": list(item["secondary_tags"]),
+                    "primary_category": str(item["category"]),
+                    "secondary_categories": [],
                 }
             )
 

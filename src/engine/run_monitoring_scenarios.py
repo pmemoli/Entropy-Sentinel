@@ -19,7 +19,7 @@ from dotenv import load_dotenv
 from .core.computations import compute_entropy_profile
 from .scenarios import MONITORING_REGISTRY
 
-load_dotenv()
+load_dotenv(override=True)
 
 epsilon = 1e-10
 
@@ -99,7 +99,7 @@ def run(
 
     print("Starting generation...")
 
-    batch_size = 32
+    batch_size = 16
 
     amount_processed = 0
     while scenario.has_next():

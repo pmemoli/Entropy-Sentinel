@@ -3,6 +3,7 @@ from src.engine.judge_monitoring_scenarios import evaluate_suite
 SUITES = [
     # phi3-3b
     "phi3-3b-wildbench-test",
+    "phi3-3b-mtbench-test",
 ]
 
 

@@ -9,6 +9,8 @@ from .theoremqa import THEOREMQA
 from .olympiadbench import OLYMPIADBENCH
 from .matscibench import MATSCIBENCH
 from .wildbench import WILDBENCH
+from .mt_bench import MTBENCH
+from .arena_hard import ARENAHARD
 
 REGISTRY = {
     "gsm8k": GSM8K,
@@ -25,4 +27,6 @@ REGISTRY = {
 
 MONITORING_REGISTRY = {
     "wildbench": WILDBENCH,
+    "mtbench": MTBENCH,
+    "arenahard": ARENAHARD,
 }

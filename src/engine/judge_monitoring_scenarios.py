@@ -12,7 +12,7 @@ from dotenv import load_dotenv
 from .core.prompts import load_prompt
 from .core.types import MonitoringMessage
 
-load_dotenv()
+load_dotenv(override=True)
 api_key = os.getenv("OPENAI_API_KEY")  # type: ignore
 
 SINGLE_TURN_PROMPT = load_prompt("single-v1")
@@ -165,6 +165,7 @@ def evaluate_suite_batch(suite: str, poll_seconds: int = 30):
             for turn in range(user_turns):
                 message = messages[2 * turn + 1]
                 if message.get("judge_score") is not None:
+                    print("Already evaluated, skipping...")
                     continue
 
                 custom_id = str(len(requests))
@@ -189,7 +190,9 @@ def evaluate_suite_batch(suite: str, poll_seconds: int = 30):
 
     client = OpenAI(api_key=api_key)
 
-    jsonl_bytes = "\n".join(json.dumps(req) for req in requests).encode("utf-8")
+    jsonl_bytes = "\n".join(json.dumps(req) for req in requests).encode(
+        "utf-8"
+    )
     input_file = client.files.create(
         file=("judge_requests.jsonl", jsonl_bytes),
         purpose="batch",
@@ -212,7 +215,9 @@ def evaluate_suite_batch(suite: str, poll_seconds: int = 30):
         batch = client.batches.retrieve(batch.id)
 
     if batch.status != "completed":
-        raise RuntimeError(f"Batch ended in status '{batch.status}': {batch.id}")
+        raise RuntimeError(
+            f"Batch ended in status '{batch.status}': {batch.id}"
+        )
 
     # Apply successful responses; leave failures un-scored so a later run
     # (sync or batch) re-attempts only them.
