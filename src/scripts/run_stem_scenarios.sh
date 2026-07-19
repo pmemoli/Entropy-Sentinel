@@ -131,7 +131,7 @@ for ((i = 0; i < ${#presets[@]}; i+=4)); do
       --model_name "${model_name}" \
       --suite "${suite}" \
       --result_path "./src/data/runs" \
-      --max_length 4096
+      --max_length 2048
 
     echo "Completed storing activations for ${suite}."
 done

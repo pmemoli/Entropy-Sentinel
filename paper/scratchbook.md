@@ -223,8 +223,11 @@ Same thing but with raw length. Ideally they differ considerably.
 
 ## TODO
 
-1. Correr experimentos de la parte 2.
-2. Reconstruir resultados del exp 1 bien y re-escribir la parte 1 del paper.
+1. Train composition experiments.
+2. Reconstruir resultados + ATC del exp 1 bien.
+3. Reescribir parte 1.
+4. Reescribir parte 2.
+5. Pasar ablaciones restantes.
 
 Para el domingo:
 
