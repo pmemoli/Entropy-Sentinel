@@ -152,12 +152,6 @@ We show spearman (and aee?) median-iqr for k = 1...7 and have a final LOCO (leav
 
 [LOCO GRAPH]
 
-##### What are the main composition factors driving performance
-
-[Same U shape weighted-difficulty graph]
-
-+ best performing combinations in appendix 
-
 ##### Takeaways
 
 [Once I have results]
@@ -223,28 +217,29 @@ Same thing but with raw length. Ideally they differ considerably.
 
 ## TODO
 
-1. Train composition experiments.
-2. Reconstruir resultados + ATC del exp 1 bien.
-3. Reescribir parte 1.
-4. Reescribir parte 2.
-5. Pasar ablaciones restantes.
+HOY (noche):
 
-Para el domingo:
+. Dejar corriendo la generacion de modelos para la parte 1.
+. Dejar corriendo WILDBENCH a la noche para la parte 2.
 
-- Correr WildBench y MT-Bench para Phi 3.5 (misma configuracion).
-- Correr el judge.
-- Entrenar sentinel y evaluar para esos.
+TOMORROW (martes):
 
-Concurrentemente:
+1. Reproducir experimentos de la parte 1 y retocar la parte 1 del paper.
+2. Dejar corriendo WILDBENCH para la parte 2.
 
-- Organizar resultados y codigo de la parte 1 bien.
+PASADO (miercoles):
 
-Posterior:
+1. Correr experimentos de la parte 2 y guardar datos.
+2. Empezar a escribir esa parte.
 
-- En base a lo que de, correr para el resto de benchmarks.
-- En base a lo que de, correr para el resto de modelos (minimo 2+).
+Para el Jueves:
 
-- Estaria bueno pensar un buen estudio de temperatura para el sentinel.
-- Retocar el paper.
-- Remirar el codigo y dejarlo bien.
+1. Terminar de escribir exp 2 y remirar el paper. 
 
+Para el Viernes:
+
+1. Terminar de escribir el paper.
+2. Pensar y correr ablaciones de length & temp para stem qa. 
+
+Sabado:
+1. Leer y releer el paper. Mandar al prox ciclo de ACL.

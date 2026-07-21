@@ -33,9 +33,6 @@ judge-monitoring:
 features-monitoring:
 	$(PYTHON) -m src.scripts.generate_monitoring_features
 
-classifiers-monitoring:
-	$(PYTHON) -m src.scripts.train_monitoring_classifiers
-
 pipeline-stem: run-stem judge-stem features-stem
 
 pipeline-monitoring: run-monitoring judge-monitoring features-monitoring

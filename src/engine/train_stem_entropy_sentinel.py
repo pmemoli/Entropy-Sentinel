@@ -6,7 +6,7 @@ from sklearn.utils import shuffle
 from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.calibration import CalibratedClassifierCV
-from sklearn.model_selection import GridSearchCV
+from sklearn.model_selection import GridSearchCV, StratifiedShuffleSplit
 from sklearn.neural_network import MLPClassifier
 
 from imblearn.over_sampling import RandomOverSampler
@@ -48,12 +48,13 @@ def run_training(
     calibrate: bool = False,
     feature_subset: list[str] | None = None,
     suite_cache: dict | None = None,
+    save_model: bool = True,
 ):
     X_list = []
     y_list = []
     for suite in train_suites:
         if suite_cache is not None and suite in suite_cache:
-            raw_data = suite_cache[suite]
+            raw_data = list(suite_cache[suite])
         else:
             data_path = f"src/data/features/{suite}.pt"
             raw_data = torch.load(data_path)
@@ -78,11 +79,12 @@ def run_training(
 
             y_list.append(float(item["success"]))
 
-    scaler = StandardScaler()
-    X = torch.stack(X_list).float().numpy()
-    X = scaler.fit_transform(X)
+    X_raw = torch.stack(X_list).float().numpy()
     y = np.array(y_list, dtype=np.float32)
-    X, y = shuffle(X, y, random_state=42)
+    X_raw, y = shuffle(X_raw, y, random_state=42)
+
+    scaler = StandardScaler()
+    X = scaler.fit_transform(X_raw)
 
     min_class_count = min(np.bincount(y.astype(int)))
 
@@ -131,16 +133,22 @@ def run_training(
             ],
         }
 
-    cv_folds = min(5, min_class_count)
-    if cv_folds < 2:
+    if min_class_count < 2:
         print("Not enough samples to perform cross-validation.")
-        return
+        return None, None
+
+    # Single held-out validation split instead of k-fold: the grid is coarse
+    # and this runs across 166k (llm, benchmark, feature) combos, so a
+    # noisier per-config pick washes out in aggregate - not worth 5x the fits.
+    search_cv = StratifiedShuffleSplit(
+        n_splits=1, test_size=0.3, random_state=42
+    )
 
     grid_search = GridSearchCV(
         estimator=base_model,
         param_grid=param_grid,
         scoring="roc_auc",
-        cv=cv_folds,
+        cv=search_cv,
         verbose=0,
         n_jobs=-1,
     )
@@ -159,10 +167,14 @@ def run_training(
         calibrator.fit(X, y)
         trained_model = calibrator
 
-    joblib.dump(trained_model, f"src/data/models/{model_name}.joblib")
-    joblib.dump(scaler, f"src/data/models/{model_name}_scaler.joblib")
+    if save_model:
+        joblib.dump(trained_model, f"src/data/models/{model_name}.joblib")
+        joblib.dump(scaler, f"src/data/models/{model_name}_scaler.joblib")
+        print(f"Training complete. Model and Scaler saved.")
+    else:
+        print("Training complete.")
 
-    print(f"Training complete. Model and Scaler saved.")
+    return trained_model, scaler
 
 
 def parse_arguments():
