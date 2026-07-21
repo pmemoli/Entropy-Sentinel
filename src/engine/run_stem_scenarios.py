@@ -14,7 +14,7 @@ from dotenv import load_dotenv
 from .core.computations import compute_entropy_profile
 from .scenarios import REGISTRY
 
-load_dotenv()
+load_dotenv(override=True)
 
 epsilon = 1e-10
 

@@ -1,29 +1,30 @@
+import argparse
+import os
+
+from dotenv import load_dotenv
+
+load_dotenv(override=True)
+
 from .core.types import (
     MonitoringGenerationResult,
     MonitoringMessage,
     MonitoringInput,
 )
-import argparse
 import torch
 import time
 import gc
-import os
 import traceback
 
 from vllm import LLM, SamplingParams
 from transformers import set_seed
 from datasets.utils.py_utils import Literal
-from dotenv import load_dotenv
-
 
 from .core.computations import compute_entropy_profile
 from .scenarios import MONITORING_REGISTRY
 
-load_dotenv(override=True)
-
 epsilon = 1e-10
 
-MAX_TOKENS = 4096
+MAX_TOKENS = 32768
 LOGPROBS = 20
 
 
@@ -34,6 +35,8 @@ def run(
     result_path: str,
     split: Literal["train", "test"] = "train",
     max_length: int = MAX_TOKENS,
+    max_new_tokens: int = 8192,
+    batch_size: int = 64,
     seed: int = 42,
     temperature: float = 0.5,
     max_samples: int | None = None,
@@ -88,9 +91,13 @@ def run(
         **llm_params.get(model_family, {}),  # type: ignore
     )
 
+    # max_new_tokens (per-turn generation budget) must stay well below
+    # max_model_len (total context window) - otherwise a single long turn
+    # can both tank batch throughput (llm.chat() blocks on the slowest
+    # sequence) and blow the context budget on a later turn.
     sampling_params = SamplingParams(
         temperature=temperature,
-        max_tokens=max_length,
+        max_tokens=max_new_tokens,
         logprobs=LOGPROBS,
         seed=seed,
     )
@@ -98,8 +105,6 @@ def run(
     tokenizer = llm.get_tokenizer()
 
     print("Starting generation...")
-
-    batch_size = 16
 
     amount_processed = 0
     while scenario.has_next():
@@ -162,11 +167,16 @@ def generate_conversations(
     # max_turns = max(len(sample["questions"]) for sample in samples)
     max_turns = 2  # fixing this for the conversation to fit in the GPU
 
+    # Samples dropped for hitting max_tokens (truncated instead of finishing
+    # naturally) - excluded from later turns and from the final results,
+    # without losing the rest of the batch.
+    truncated: set[int] = set()
+
     for turn in range(max_turns):
         active = [
             i
             for i, sample in enumerate(samples)
-            if turn < len(sample["questions"])
+            if turn < len(sample["questions"]) and i not in truncated
         ]
         if not active:
             break
@@ -205,6 +215,17 @@ def generate_conversations(
         )
 
         for i, output in zip(active, request_outputs):
+            finish_reason = output.outputs[0].finish_reason
+            if finish_reason == "length":
+                print(
+                    f"Sample index {i} hit max_tokens "
+                    f"({sampling_params.max_tokens}) on turn {turn + 1}; "
+                    "dropping it instead of storing a truncated sequence "
+                    "(rest of the batch is unaffected)."
+                )
+                truncated.add(i)
+                continue
+
             generated_text = output.outputs[0].text
             logprobs_data = output.outputs[0].logprobs
             token_ids = output.outputs[0].token_ids
@@ -226,7 +247,9 @@ def generate_conversations(
 
         del request_outputs
 
-    return results
+    return [
+        result for i, result in enumerate(results) if i not in truncated
+    ]
 
 
 def parse_arguments():
@@ -237,7 +260,19 @@ def parse_arguments():
     parser.add_argument("--model_name", type=str, required=True)
     parser.add_argument("--suite", type=str, required=True)
     parser.add_argument("--result_path", type=str, required=True)
-    parser.add_argument("--max_length", type=int, default=2048)
+    parser.add_argument("--max_length", type=int, default=32768)
+    parser.add_argument(
+        "--max_new_tokens",
+        type=int,
+        default=8192,
+        help="Per-turn generation budget (must stay well below max_length).",
+    )
+    parser.add_argument(
+        "--batch_size",
+        type=int,
+        default=64,
+        help="Samples submitted per llm.chat() call.",
+    )
     parser.add_argument("--device", type=str, default="cuda:0")
     parser.add_argument("--split", type=str, default="test")
     parser.add_argument("--seed", type=int, default=42)
@@ -260,6 +295,8 @@ def main():
         result_path=args.result_path,
         split=args.split,
         max_length=args.max_length,
+        max_new_tokens=args.max_new_tokens,
+        batch_size=args.batch_size,
         seed=args.seed,
         temperature=args.temperature,
         max_samples=args.max_samples,

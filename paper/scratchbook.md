@@ -225,7 +225,8 @@ HOY (noche):
 TOMORROW (martes):
 
 1. Reproducir experimentos de la parte 1 y retocar la parte 1 del paper.
-2. Dejar corriendo WILDBENCH para la parte 2.
+(2). Length ablation simil wildbench.
+3. Dejar corriendo WILDBENCH para la parte 2.
 
 PASADO (miercoles):
 
@@ -234,7 +235,8 @@ PASADO (miercoles):
 
 Para el Jueves:
 
-1. Terminar de escribir exp 2 y remirar el paper. 
+1. Terminar de escribir exp 2. 
+2. Escribir intro, abstract y que el hilo sea coherente.
 
 Para el Viernes:
 

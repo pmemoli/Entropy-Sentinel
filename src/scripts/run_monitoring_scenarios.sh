@@ -1,15 +1,15 @@
-export VLLM_USE_V1=0
+# export VLLM_USE_V1=0
 
 presets=(
+    "wildbench" "test" "meta-llama/Llama-3.1-8B-Instruct" "llama3-8b-wildbench-test"
+    "wildbench" "test" "google/gemma-3-4b-it" "gemma3-4b-wildbench-test"
+    "wildbench" "test" "google/gemma-3-12b-it" "gemma3-12b-wildbench-test"
+    "wildbench" "test" "openai/gpt-oss-20b" "oss-20b-wildbench-test"
     "wildbench" "test" "microsoft/Phi-3.5-mini-instruct" "phi3-3b-wildbench-test"
     "wildbench" "test" "Qwen/Qwen3-4B-Instruct-2507" "qwen3-4b-wildbench-test"
     "wildbench" "test" "Qwen/Qwen3-8B" "qwen3-8b-wildbench-test"
     "wildbench" "test" "mistralai/Ministral-3-3B-Instruct-2512" "ministral3-3b-wildbench-test"
     "wildbench" "test" "mistralai/Ministral-3-8B-Instruct-2512" "ministral3-8b-wildbench-test"
-    "wildbench" "test" "meta-llama/Llama-3.1-8B-Instruct" "llama3-8b-wildbench-test"
-    "wildbench" "test" "google/gemma-3-4b-it" "gemma3-4b-wildbench-test"
-    "wildbench" "test" "google/gemma-3-12b-it" "gemma3-12b-wildbench-test"
-    "wildbench" "test" "openai/gpt-oss-20b" "oss-20b-wildbench-test"
 )
 
 for ((i = 0; i < ${#presets[@]}; i+=4)); do
@@ -26,7 +26,10 @@ for ((i = 0; i < ${#presets[@]}; i+=4)); do
       --model_name "${model_name}" \
       --suite "${suite}" \
       --result_path "./src/data/runs" \
-      --max_length 16384
+      --max_length 32768 \
+      --max_new_tokens 8192 \
+      --batch_size 64
+
 
     echo "Completed storing activations for ${suite}."
 done

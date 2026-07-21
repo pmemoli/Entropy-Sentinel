@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from types import SimpleNamespace
 
 import pytest
 import torch
@@ -22,6 +23,7 @@ class FakeCompletion:
     text: str
     token_ids: list[int]
     logprobs: list[dict]
+    finish_reason: str = "stop"
 
 
 @dataclass
@@ -29,7 +31,9 @@ class FakeRequestOutput:
     outputs: list
 
 
-def make_output(text: str, steps: list[dict[int, float]]) -> FakeRequestOutput:
+def make_output(
+    text: str, steps: list[dict[int, float]], finish_reason: str = "stop"
+) -> FakeRequestOutput:
     """steps[t] maps token_id -> logprob for generation step t.
 
     The generated token at step t is taken to be the first key of steps[t],
@@ -41,7 +45,12 @@ def make_output(text: str, steps: list[dict[int, float]]) -> FakeRequestOutput:
     ]
     return FakeRequestOutput(
         outputs=[
-            FakeCompletion(text=text, token_ids=token_ids, logprobs=logprobs)
+            FakeCompletion(
+                text=text,
+                token_ids=token_ids,
+                logprobs=logprobs,
+                finish_reason=finish_reason,
+            )
         ]
     )
 
@@ -185,6 +194,92 @@ def test_raises_when_generated_token_absent_from_logprobs():
 
     with pytest.raises(KeyError):
         generate_conversations(llm, FakeTokenizer(), samples, SP)
+
+
+def test_truncated_sample_is_dropped_but_batch_survives():
+    # A response cut off by hitting max_tokens must not be silently stored -
+    # we want fully-generated sequences - but a single truncation shouldn't
+    # cost the rest of the batch.
+    samples = [sample(["q0"]), sample(["q1"]), sample(["q2"])]
+    llm = FakeLLM(
+        [
+            [
+                make_output("r0", [{100: -0.1}]),
+                make_output("r1", [{200: -0.2}], finish_reason="length"),
+                make_output("r2", [{300: -0.3}]),
+            ]
+        ]
+    )
+    sampling_params = SimpleNamespace(max_tokens=1024)
+
+    results = generate_conversations(
+        llm, FakeTokenizer(), samples, sampling_params
+    )
+
+    # only the truncated sample (index 1) is missing; the other two survive
+    # fully intact.
+    assert len(results) == 2
+    contents = [r["messages"][0]["content"] for r in results]
+    assert contents == ["q0", "q2"]
+    assert results[0]["messages"][1]["content"] == "r0"
+    assert results[1]["messages"][1]["content"] == "r2"
+
+
+def test_truncation_on_first_turn_excludes_sample_from_second_turn():
+    # sample 0 truncates on turn 1; sample 1 is a normal two-turn convo.
+    samples = [
+        sample(["q0_0", "q0_1"], primary="p0"),
+        sample(["q1_0", "q1_1"], primary="p1"),
+    ]
+    llm = FakeLLM(
+        [
+            # turn 0: active = [0, 1]
+            [
+                make_output(
+                    "a0_t0", [{100: -0.1}], finish_reason="length"
+                ),
+                make_output("a1_t0", [{200: -0.2}]),
+            ],
+            # turn 1: sample 0 must NOT reappear here
+            [make_output("a1_t1", [{300: -0.3}])],
+        ]
+    )
+    sampling_params = SimpleNamespace(max_tokens=1024)
+
+    results = generate_conversations(
+        llm, FakeTokenizer(), samples, sampling_params
+    )
+
+    # turn-1 chat call only saw sample 1
+    assert len(llm.chat_calls) == 2
+    assert llm.chat_calls[1] == [
+        [
+            {"role": "user", "content": "q1_0"},
+            {"role": "assistant", "content": "a1_t0"},
+            {"role": "user", "content": "q1_1"},
+        ]
+    ]
+
+    # sample 0 dropped entirely; sample 1 completed both turns
+    assert len(results) == 1
+    assert [m["content"] for m in results[0]["messages"]] == [
+        "q1_0",
+        "a1_t0",
+        "q1_1",
+        "a1_t1",
+    ]
+
+
+def test_normal_finish_reason_is_kept():
+    # Sanity check the positive case isn't accidentally dropped too -
+    # finish_reason="stop" (the default) must not trigger the guard.
+    samples = [sample(["q0"])]
+    llm = FakeLLM([[make_output("r0", [{100: -0.1}])]])
+
+    results = generate_conversations(llm, FakeTokenizer(), samples, SP)
+
+    assert len(results) == 1
+    assert results[0]["messages"][1]["content"] == "r0"
 
 
 # --- routing across the active filter --------------------------------------
