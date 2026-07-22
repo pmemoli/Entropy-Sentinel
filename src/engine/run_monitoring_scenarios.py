@@ -167,16 +167,11 @@ def generate_conversations(
     # max_turns = max(len(sample["questions"]) for sample in samples)
     max_turns = 2  # fixing this for the conversation to fit in the GPU
 
-    # Samples dropped for hitting max_tokens (truncated instead of finishing
-    # naturally) - excluded from later turns and from the final results,
-    # without losing the rest of the batch.
-    truncated: set[int] = set()
-
     for turn in range(max_turns):
         active = [
             i
             for i, sample in enumerate(samples)
-            if turn < len(sample["questions"]) and i not in truncated
+            if turn < len(sample["questions"])
         ]
         if not active:
             break
@@ -215,17 +210,6 @@ def generate_conversations(
         )
 
         for i, output in zip(active, request_outputs):
-            finish_reason = output.outputs[0].finish_reason
-            if finish_reason == "length":
-                print(
-                    f"Sample index {i} hit max_tokens "
-                    f"({sampling_params.max_tokens}) on turn {turn + 1}; "
-                    "dropping it instead of storing a truncated sequence "
-                    "(rest of the batch is unaffected)."
-                )
-                truncated.add(i)
-                continue
-
             generated_text = output.outputs[0].text
             logprobs_data = output.outputs[0].logprobs
             token_ids = output.outputs[0].token_ids
@@ -247,9 +231,7 @@ def generate_conversations(
 
         del request_outputs
 
-    return [
-        result for i, result in enumerate(results) if i not in truncated
-    ]
+    return results
 
 
 def parse_arguments():

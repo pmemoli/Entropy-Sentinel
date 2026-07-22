@@ -103551,3 +103551,43 @@ a425ae852bc1,llama3-8b,gpqa-test gsm-test mathhendrycks-test matscibench-test,ra
 33939dc17fe5,llama3-8b,gpqa-test gsm-test mathhendrycks-test matscibench-test,random_forest,False,False,mean std max q10 q25 q50 q75 q90 skewness kurtosis,0.9515151515151514,0.08912470474535764
 3faad9af2a21,llama3-8b,gpqa-test gsm-test mathhendrycks-test matscibench-test,random_forest,False,False,max se_sum nll_sum,0.9393939393939393,0.057219722298341394
 98a3657544ee,llama3-8b,gpqa-test gsm-test mathhendrycks-test matscibench-test,random_forest,False,False,se_sum,0.9393939393939393,0.06650594245570216
+08bd355d4975,llama3-8b,gpqa-test gsm-test mathhendrycks-test matscibench-test,logistic_regression,True,True,mean std max q10 q25 q50 q75 q90 skewness kurtosis se_sum nll_avg nll_max nll_sum lntp mtp ppl,0.9636363636363635,0.04897142106931953
+8453dda9cd28,llama3-8b,gpqa-test gsm-test mathhendrycks-test matscibench-test,logistic_regression,True,True,mean std max q10 q25 q50 q75 q90 skewness kurtosis,0.9515151515151514,0.08039980112397285
+4124a6f5010e,llama3-8b,gpqa-test gsm-test mathhendrycks-test matscibench-test,logistic_regression,True,True,max se_sum nll_sum,0.9515151515151514,0.05836153145034456
+c6739aab1562,llama3-8b,gpqa-test gsm-test mathhendrycks-test matscibench-test,logistic_regression,True,True,se_sum,0.9515151515151514,0.06207476434415275
+ba8bdf7214c8,llama3-8b,gpqa-test gsm-test mathhendrycks-test matscibench-test,logistic_regression,True,False,mean std max q10 q25 q50 q75 q90 skewness kurtosis se_sum nll_avg nll_max nll_sum lntp mtp ppl,0.9636363636363635,0.048984607981987484
+4942c182d4d1,llama3-8b,gpqa-test gsm-test mathhendrycks-test matscibench-test,logistic_regression,True,False,mean std max q10 q25 q50 q75 q90 skewness kurtosis,0.9515151515151514,0.0804756791263227
+3214eb622f49,llama3-8b,gpqa-test gsm-test mathhendrycks-test matscibench-test,logistic_regression,True,False,max se_sum nll_sum,0.9515151515151514,0.05817374040846102
+e5caac165908,llama3-8b,gpqa-test gsm-test mathhendrycks-test matscibench-test,logistic_regression,True,False,se_sum,0.9515151515151514,0.062074764465284184
+fc45e7c1b6dc,llama3-8b,gpqa-test gsm-test mathhendrycks-test matscibench-test,logistic_regression,False,True,mean std max q10 q25 q50 q75 q90 skewness kurtosis se_sum nll_avg nll_max nll_sum lntp mtp ppl,0.9636363636363635,0.04360294466539551
+132fc6824842,llama3-8b,gpqa-test gsm-test mathhendrycks-test matscibench-test,logistic_regression,False,True,mean std max q10 q25 q50 q75 q90 skewness kurtosis,0.9515151515151514,0.07791961204180163
+99f9daf4ed4b,llama3-8b,gpqa-test gsm-test mathhendrycks-test matscibench-test,logistic_regression,False,True,max se_sum nll_sum,0.9515151515151514,0.0532875910014118
+710f15cf09c7,llama3-8b,gpqa-test gsm-test mathhendrycks-test matscibench-test,logistic_regression,False,True,se_sum,0.9515151515151514,0.05981810681361417
+6f16ae9e38dc,llama3-8b,gpqa-test gsm-test mathhendrycks-test matscibench-test,logistic_regression,False,False,mean std max q10 q25 q50 q75 q90 skewness kurtosis se_sum nll_avg nll_max nll_sum lntp mtp ppl,0.9636363636363635,0.04678328330435547
+21d7a716e26d,llama3-8b,gpqa-test gsm-test mathhendrycks-test matscibench-test,logistic_regression,False,False,mean std max q10 q25 q50 q75 q90 skewness kurtosis,0.9515151515151514,0.07764857471025363
+915db714cf68,llama3-8b,gpqa-test gsm-test mathhendrycks-test matscibench-test,logistic_regression,False,False,max se_sum nll_sum,0.9515151515151514,0.05631421145126991
+93b2d4824ec2,llama3-8b,gpqa-test gsm-test mathhendrycks-test matscibench-test,logistic_regression,False,False,se_sum,0.9515151515151514,0.06135817580962113
+e530f2075444,llama3-8b,gpqa-test gsm-test mathhendrycks-test matscibench-test,neural_network,True,True,mean std max q10 q25 q50 q75 q90 skewness kurtosis se_sum nll_avg nll_max nll_sum lntp mtp ppl,0.9515151515151514,0.04673572555947444
+1a527115c419,llama3-8b,gpqa-test gsm-test mathhendrycks-test matscibench-test,neural_network,True,True,mean std max q10 q25 q50 q75 q90 skewness kurtosis,0.9515151515151514,0.08705421798167493
+cf71e8467f50,llama3-8b,gpqa-test gsm-test mathhendrycks-test matscibench-test,neural_network,True,True,max se_sum nll_sum,0.9515151515151514,0.0421520735867979
+6133de024671,llama3-8b,gpqa-test gsm-test mathhendrycks-test matscibench-test,neural_network,True,True,se_sum,0.9515151515151514,0.06511991547632076
+40f9977cee4f,llama3-8b,gpqa-test gsm-test mathhendrycks-test matscibench-test,neural_network,True,False,mean std max q10 q25 q50 q75 q90 skewness kurtosis se_sum nll_avg nll_max nll_sum lntp mtp ppl,0.9636363636363635,0.05288874279961756
+8a340fae0da4,llama3-8b,gpqa-test gsm-test mathhendrycks-test matscibench-test,neural_network,True,False,mean std max q10 q25 q50 q75 q90 skewness kurtosis,0.9515151515151514,0.08756282721798692
+ee44d0d123ff,llama3-8b,gpqa-test gsm-test mathhendrycks-test matscibench-test,neural_network,True,False,max se_sum nll_sum,0.9515151515151514,0.05230234683593512
+fa24b5f8b03f,llama3-8b,gpqa-test gsm-test mathhendrycks-test matscibench-test,neural_network,True,False,se_sum,0.9515151515151514,0.06598318080243662
+3570d927f869,llama3-8b,gpqa-test gsm-test mathhendrycks-test matscibench-test,neural_network,False,True,mean std max q10 q25 q50 q75 q90 skewness kurtosis se_sum nll_avg nll_max nll_sum lntp mtp ppl,0.9515151515151514,0.0749977844101971
+69cb9c6e9952,llama3-8b,gpqa-test gsm-test mathhendrycks-test matscibench-test,neural_network,False,True,mean std max q10 q25 q50 q75 q90 skewness kurtosis,0.9515151515151514,0.09765584645100292
+58dcf6b18d64,llama3-8b,gpqa-test gsm-test mathhendrycks-test matscibench-test,neural_network,False,True,max se_sum nll_sum,0.9515151515151514,0.11896841280190404
+c7db01a5f642,llama3-8b,gpqa-test gsm-test mathhendrycks-test matscibench-test,neural_network,False,True,se_sum,0.8909090909090909,0.235882002637071
+bdbeaa0dc744,llama3-8b,gpqa-test gsm-test mathhendrycks-test matscibench-test,neural_network,False,False,mean std max q10 q25 q50 q75 q90 skewness kurtosis se_sum nll_avg nll_max nll_sum lntp mtp ppl,0.9636363636363635,0.09084616206614432
+acc435f67a10,llama3-8b,gpqa-test gsm-test mathhendrycks-test matscibench-test,neural_network,False,False,mean std max q10 q25 q50 q75 q90 skewness kurtosis,0.9515151515151514,0.10443448029486593
+25c032bf9e82,llama3-8b,gpqa-test gsm-test mathhendrycks-test matscibench-test,neural_network,False,False,max se_sum nll_sum,0.9515151515151514,0.13464596025673803
+532f33dc2a30,llama3-8b,gpqa-test gsm-test mathhendrycks-test matscibench-test,neural_network,False,False,se_sum,0.8909090909090909,0.2253734951469129
+44e8db3e8519,llama3-8b,gsm-test mathhendrycks-test scibench-test theoremqa-test,random_forest,True,True,mean std max q10 q25 q50 q75 q90 skewness kurtosis se_sum nll_avg nll_max nll_sum lntp mtp ppl,0.9515151515151514,0.06191935109239344
+7012d8590e52,llama3-8b,gsm-test mathhendrycks-test scibench-test theoremqa-test,random_forest,True,True,mean std max q10 q25 q50 q75 q90 skewness kurtosis,0.9393939393939393,0.10671719539400744
+d6b86c2adfc1,llama3-8b,gsm-test mathhendrycks-test scibench-test theoremqa-test,random_forest,True,True,max se_sum nll_sum,0.9515151515151514,0.06712498098317839
+df4fced70e95,llama3-8b,gsm-test mathhendrycks-test scibench-test theoremqa-test,random_forest,True,True,se_sum,0.9636363636363635,0.06913012391937506
+650865a3f411,llama3-8b,gsm-test mathhendrycks-test scibench-test theoremqa-test,random_forest,True,False,mean std max q10 q25 q50 q75 q90 skewness kurtosis se_sum nll_avg nll_max nll_sum lntp mtp ppl,0.9636363636363635,0.06478000199019336
+ad8967946971,llama3-8b,gsm-test mathhendrycks-test scibench-test theoremqa-test,random_forest,True,False,mean std max q10 q25 q50 q75 q90 skewness kurtosis,0.9393939393939393,0.10732255593918816
+b4a3d0547019,llama3-8b,gsm-test mathhendrycks-test scibench-test theoremqa-test,random_forest,True,False,max se_sum nll_sum,0.9515151515151514,0.0663589900984345
+bddc8ff93a34,llama3-8b,gsm-test mathhendrycks-test scibench-test theoremqa-test,random_forest,True,False,se_sum,0.9515151515151514,0.0683444419224917

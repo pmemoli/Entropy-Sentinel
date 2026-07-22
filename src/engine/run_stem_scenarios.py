@@ -1,4 +1,3 @@
-from engine.core.types import STEMGenerationResult
 import argparse
 import torch
 import time
@@ -12,13 +11,14 @@ from datasets.utils.py_utils import Literal
 from dotenv import load_dotenv
 
 from .core.computations import compute_entropy_profile
+from .core.types import STEMGenerationResult
 from .scenarios import REGISTRY
 
 load_dotenv(override=True)
 
 epsilon = 1e-10
 
-MAX_TOKENS = 4096
+MAX_TOKENS = 32768
 LOGPROBS = 20
 
 
@@ -92,7 +92,7 @@ def run(
 
     print("Starting generation...")
 
-    batch_size = 32
+    batch_size = 64
 
     amount_processed = 0
     while scenario.has_next():
@@ -113,44 +113,16 @@ def run(
         )
 
         try:
-            batch_messages = [
-                [{"role": "user", "content": sample["prompt"]}]
-                for sample in batch_samples
-            ]
-
-            request_outputs = llm.chat(
-                messages=batch_messages,  # type: ignore
+            batch_results = generate_responses(
+                llm=llm,
+                samples=batch_samples,
                 sampling_params=sampling_params,
-                use_tqdm=True,
             )
-
-            batch_results: STEMGenerationResult = []
-            for output, sample in zip(request_outputs, batch_samples):
-                generated_text = output.outputs[0].text
-                logprobs_data = output.outputs[0].logprobs
-                token_ids = output.outputs[0].token_ids
-                logprobs_data = output.outputs[0].logprobs
-
-                selected_logprobs = [
-                    logprobs_data[t][token_id].logprob
-                    for t, token_id in enumerate(token_ids)
-                ]
-                entropy_profile = compute_entropy_profile(logprobs_data)
-
-                result: STEMGenerationResult = {
-                    "prompt": sample["prompt"],
-                    "reference": sample["reference"],
-                    "generation": generated_text,
-                    "sequences": output.outputs[0].token_ids,
-                    "entropy_profile": entropy_profile.cpu(),
-                    "selected_logprobs": torch.tensor(selected_logprobs).cpu(),
-                }
-                batch_results.append(result)
 
             store_results(batch_results)
             amount_processed += len(batch_samples)
 
-            del request_outputs, batch_results
+            del batch_results
             gc.collect()
             torch.cuda.empty_cache()
 
@@ -161,6 +133,46 @@ def run(
 
     print(f"Benchmark completed. Results saved to {file_path}")
     print(f"Total samples processed: {amount_processed}")
+
+
+def generate_responses(
+    llm: LLM,
+    samples: list,
+    sampling_params: SamplingParams,
+) -> list[STEMGenerationResult]:
+    batch_messages = [
+        [{"role": "user", "content": sample["question"]}] for sample in samples
+    ]
+
+    request_outputs = llm.chat(
+        messages=batch_messages,  # type: ignore
+        sampling_params=sampling_params,
+        use_tqdm=True,
+    )
+
+    results: list[STEMGenerationResult] = []
+    for output, sample in zip(request_outputs, samples):
+        generated_text = output.outputs[0].text
+        logprobs_data = output.outputs[0].logprobs
+        token_ids = output.outputs[0].token_ids
+
+        selected_logprobs = [
+            logprobs_data[t][token_id].logprob
+            for t, token_id in enumerate(token_ids)
+        ]
+        entropy_profile = compute_entropy_profile(logprobs_data)
+
+        result: STEMGenerationResult = {
+            "prompt": sample["question"],
+            "reference": sample["reference"],
+            "generation": generated_text,
+            "sequences": token_ids,
+            "entropy_profile": entropy_profile.cpu(),
+            "selected_logprobs": torch.tensor(selected_logprobs).cpu(),
+        }
+        results.append(result)
+
+    return results
 
 
 def parse_arguments():

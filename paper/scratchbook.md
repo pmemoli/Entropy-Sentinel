@@ -43,7 +43,11 @@ For frameworks:
 
 Langfuse, LangSmith, Arize Phoenix and Comet Opik.
 
-The intro is:
+### RQ
+
+Can entropy signals through a simple probe measure response quality for verifiably correct LLM responses and subjective ones?
+
+### Intro
 
 Deployed LLMs serve heterogeneous traffic that shifts over time. Yet practitioners still lack scalable answers to two tightly coupled questions: \emph{Where is the model underperforming on current usage?} and \emph{Where should we intervene to close those gaps?} In practice, these questions are addressed either with manually curated benchmarks—expensive, slow to update, and vulnerable to contamination—or with LLM-as-a-judge evaluation over production traces, which showcase remarkable agreement with human judgement (mt bench source). While judge-based monitoring has become the de facto standard with frameworks like Langfuse (source) and Langsmith (source), its cost scales linearly with traffic volume, restricting evaluation in practice to just a small portion of production data and leaving most traffic unmonitored (source).
 

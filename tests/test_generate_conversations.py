@@ -196,10 +196,9 @@ def test_raises_when_generated_token_absent_from_logprobs():
         generate_conversations(llm, FakeTokenizer(), samples, SP)
 
 
-def test_truncated_sample_is_dropped_but_batch_survives():
-    # A response cut off by hitting max_tokens must not be silently stored -
-    # we want fully-generated sequences - but a single truncation shouldn't
-    # cost the rest of the batch.
+def test_truncated_sample_is_kept():
+    # Truncated responses (finish_reason="length") are stored, not dropped -
+    # a response cut off at max_tokens is retained like any other.
     samples = [sample(["q0"]), sample(["q1"]), sample(["q2"])]
     llm = FakeLLM(
         [
@@ -216,17 +215,15 @@ def test_truncated_sample_is_dropped_but_batch_survives():
         llm, FakeTokenizer(), samples, sampling_params
     )
 
-    # only the truncated sample (index 1) is missing; the other two survive
-    # fully intact.
-    assert len(results) == 2
+    assert len(results) == 3
     contents = [r["messages"][0]["content"] for r in results]
-    assert contents == ["q0", "q2"]
-    assert results[0]["messages"][1]["content"] == "r0"
-    assert results[1]["messages"][1]["content"] == "r2"
+    assert contents == ["q0", "q1", "q2"]
+    assert [r["messages"][1]["content"] for r in results] == ["r0", "r1", "r2"]
 
 
-def test_truncation_on_first_turn_excludes_sample_from_second_turn():
-    # sample 0 truncates on turn 1; sample 1 is a normal two-turn convo.
+def test_truncation_on_first_turn_still_runs_second_turn():
+    # sample 0 truncates on turn 1; it must still participate in turn 2 like
+    # any other multi-turn conversation.
     samples = [
         sample(["q0_0", "q0_1"], primary="p0"),
         sample(["q1_0", "q1_1"], primary="p1"),
@@ -240,8 +237,11 @@ def test_truncation_on_first_turn_excludes_sample_from_second_turn():
                 ),
                 make_output("a1_t0", [{200: -0.2}]),
             ],
-            # turn 1: sample 0 must NOT reappear here
-            [make_output("a1_t1", [{300: -0.3}])],
+            # turn 1: both samples remain active
+            [
+                make_output("a0_t1", [{300: -0.3}]),
+                make_output("a1_t1", [{400: -0.4}]),
+            ],
         ]
     )
     sampling_params = SimpleNamespace(max_tokens=1024)
@@ -250,29 +250,32 @@ def test_truncation_on_first_turn_excludes_sample_from_second_turn():
         llm, FakeTokenizer(), samples, sampling_params
     )
 
-    # turn-1 chat call only saw sample 1
+    # turn-1 chat call saw both conversations, including the truncated one
     assert len(llm.chat_calls) == 2
     assert llm.chat_calls[1] == [
+        [
+            {"role": "user", "content": "q0_0"},
+            {"role": "assistant", "content": "a0_t0"},
+            {"role": "user", "content": "q0_1"},
+        ],
         [
             {"role": "user", "content": "q1_0"},
             {"role": "assistant", "content": "a1_t0"},
             {"role": "user", "content": "q1_1"},
-        ]
+        ],
     ]
 
-    # sample 0 dropped entirely; sample 1 completed both turns
-    assert len(results) == 1
+    # both samples completed both turns
+    assert len(results) == 2
     assert [m["content"] for m in results[0]["messages"]] == [
-        "q1_0",
-        "a1_t0",
-        "q1_1",
-        "a1_t1",
+        "q0_0",
+        "a0_t0",
+        "q0_1",
+        "a0_t1",
     ]
 
 
 def test_normal_finish_reason_is_kept():
-    # Sanity check the positive case isn't accidentally dropped too -
-    # finish_reason="stop" (the default) must not trigger the guard.
     samples = [sample(["q0"])]
     llm = FakeLLM([[make_output("r0", [{100: -0.1}])]])
 
