@@ -142,6 +142,10 @@ And maybe (probably I really should...):
 
 So about 2k samples per model... 
 
+#### Research question
+
+Can top-k entropy statistics be used for monitoring chat traces? 
+
 #### Evaluation protocol
 
 Considering classifier choice was a second order decision compared to training composition, we fix the best performing model (RandomForest) from the previous section and sweep all **categories** 1C11...7C11 for training, and evaluate on the remainder ones. This tests the capability of ES of generalizing to OOD domains, and lets us study what training composition performs best.
@@ -221,31 +225,16 @@ Same thing but with raw length. Ideally they differ considerably.
 
 ## TODO
 
-HOY (noche):
+El Jueves:
 
-. Dejar corriendo la generacion de modelos para la parte 1.
-. Dejar corriendo WILDBENCH a la noche para la parte 2.
-
-TOMORROW (martes):
-
-1. Reproducir experimentos de la parte 1 y retocar la parte 1 del paper.
-(2). Length ablation simil wildbench.
-3. Dejar corriendo WILDBENCH para la parte 2.
-
-PASADO (miercoles):
-
-1. Correr experimentos de la parte 2 y guardar datos.
-2. Empezar a escribir esa parte.
-
-Para el Jueves:
-
-1. Terminar de escribir exp 2. 
-2. Escribir intro, abstract y que el hilo sea coherente.
+1. Escribir todo el exp 2. 
+2. Actualizar intro, abstract y que el hilo sea coherente.
+3. Dejar corriendo modelos.
 
 Para el Viernes:
 
-1. Terminar de escribir el paper.
-2. Pensar y correr ablaciones de length & temp para stem qa. 
+1. Reproducir experimentos 1 (por lo menos codigo y re-correr cuando este todo). 
+2. Correr ablaciones de length & temp para stem qa. 
 
 Sabado:
-1. Leer y releer el paper. Mandar al prox ciclo de ACL.
+1. Liquidar lo que falte, leer y releer el paper. Mandarlo a Luciano.

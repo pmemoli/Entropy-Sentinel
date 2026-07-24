@@ -1,15 +1,4 @@
 presets=(
-    "gsm8k" "test" "microsoft/Phi-3.5-mini-instruct" "phi3-3b-gsm-test"
-    "mathhendrycks" "test" "microsoft/Phi-3.5-mini-instruct" "phi3-3b-mathhendrycks-test"
-    "svamp" "test" "microsoft/Phi-3.5-mini-instruct" "phi3-3b-svamp-test"
-    "gsm8ksymbolic" "test" "microsoft/Phi-3.5-mini-instruct" "phi3-3b-gsmsymbolic-test"
-    "livemathbench" "test" "microsoft/Phi-3.5-mini-instruct" "phi3-3b-livemathbench-test"
-    "gpqa" "test" "microsoft/Phi-3.5-mini-instruct" "phi3-3b-gpqa-test"
-    "scibench" "test" "microsoft/Phi-3.5-mini-instruct" "phi3-3b-scibench-test"
-    "theoremqa" "test" "microsoft/Phi-3.5-mini-instruct" "phi3-3b-theoremqa-test"
-    "olympiadbench" "test" "microsoft/Phi-3.5-mini-instruct" "phi3-3b-olympiadbench-test"
-    "matscibench" "test" "microsoft/Phi-3.5-mini-instruct" "phi3-3b-matscibench-test"
-
     "gsm8k" "test" "Qwen/Qwen3-4B-Instruct-2507" "qwen3-4b-gsm-test"
     "mathhendrycks" "test" "Qwen/Qwen3-4B-Instruct-2507" "qwen3-4b-mathhendrycks-test"
     "svamp" "test" "Qwen/Qwen3-4B-Instruct-2507" "qwen3-4b-svamp-test"
@@ -31,6 +20,18 @@ presets=(
     "theoremqa" "test" "Qwen/Qwen3-8B" "qwen3-8b-theoremqa-test"
     "olympiadbench" "test" "Qwen/Qwen3-8B" "qwen3-8b-olympiadbench-test"
     "matscibench" "test" "Qwen/Qwen3-8B" "qwen3-8b-matscibench-test"
+
+    "gsm8k" "test" "microsoft/Phi-3.5-mini-instruct" "phi3-3b-gsm-test"
+    "mathhendrycks" "test" "microsoft/Phi-3.5-mini-instruct" "phi3-3b-mathhendrycks-test"
+    "svamp" "test" "microsoft/Phi-3.5-mini-instruct" "phi3-3b-svamp-test"
+    "gsm8ksymbolic" "test" "microsoft/Phi-3.5-mini-instruct" "phi3-3b-gsmsymbolic-test"
+    "livemathbench" "test" "microsoft/Phi-3.5-mini-instruct" "phi3-3b-livemathbench-test"
+    "gpqa" "test" "microsoft/Phi-3.5-mini-instruct" "phi3-3b-gpqa-test"
+    "scibench" "test" "microsoft/Phi-3.5-mini-instruct" "phi3-3b-scibench-test"
+    "theoremqa" "test" "microsoft/Phi-3.5-mini-instruct" "phi3-3b-theoremqa-test"
+    "olympiadbench" "test" "microsoft/Phi-3.5-mini-instruct" "phi3-3b-olympiadbench-test"
+    "matscibench" "test" "microsoft/Phi-3.5-mini-instruct" "phi3-3b-matscibench-test"
+
 
     "gsm8k" "test" "mistralai/Ministral-3-3B-Instruct-2512" "ministral3-3b-gsm-test"
     "mathhendrycks" "test" "mistralai/Ministral-3-3B-Instruct-2512" "ministral3-3b-mathhendrycks-test"
@@ -113,7 +114,7 @@ for ((i = 0; i < ${#presets[@]}; i+=4)); do
       --model_name "${model_name}" \
       --suite "${suite}" \
       --result_path "./src/data/runs" \
-      --max_length 32768
+      --max_length 2048
 
     echo "Completed storing activations for ${suite}."
 done

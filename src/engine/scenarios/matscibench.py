@@ -22,7 +22,7 @@ class MATSCIBENCH(STEMScenario):
 
         tensor_files = os.listdir(file_path)
 
-        questions = []
+        questions = set()
         if file_path:
             for file in tensor_files:
                 print(f"Detected file: {file}")
@@ -32,7 +32,7 @@ class MATSCIBENCH(STEMScenario):
 
                 for tensor_item in tensor:
                     question = tensor_item["prompt"].strip()
-                    questions.append(question)
+                    questions.add(question)
 
         dataset = datasets.load_dataset("MatSciBench/MatSciBench")
         for item in list(dataset["test"]):
@@ -44,6 +44,8 @@ class MATSCIBENCH(STEMScenario):
 
             if item.get("image") == "" or item.get("image") is not None:
                 continue
+
+            questions.add(question)
 
             self.items.append({"question": question, "reference": reference})
 

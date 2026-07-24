@@ -22,7 +22,7 @@ class LIVEMATHBENCH(STEMScenario):
 
         tensor_files = os.listdir(file_path)
 
-        questions = []
+        questions = set()
         for file in tensor_files:
             print(f"Detected file: {file}")
 
@@ -31,7 +31,7 @@ class LIVEMATHBENCH(STEMScenario):
 
             for tensor_item in tensor:
                 question = tensor_item["prompt"].strip()
-                questions.append(question)
+                questions.add(question)
 
         dataset = datasets.load_dataset(
             "opencompass/LiveMathBench", "v202505_all_en"
@@ -42,6 +42,8 @@ class LIVEMATHBENCH(STEMScenario):
 
             if question in questions:
                 continue
+
+            questions.add(question)
 
             self.items.append({"question": question, "reference": reference})
 

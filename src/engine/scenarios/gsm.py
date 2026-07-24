@@ -23,7 +23,7 @@ class GSM8K(STEMScenario):
 
         tensor_files = os.listdir(file_path)
 
-        questions = []
+        questions = set()
         for file in tensor_files:
             print(f"Processing file: {file}")
 
@@ -32,7 +32,7 @@ class GSM8K(STEMScenario):
 
             for tensor_item in tensor:
                 question = tensor_item["prompt"].strip()
-                questions.append(question)
+                questions.add(question)
 
         dataset = datasets.load_dataset("gsm8k", "main")
         for item in list(dataset[split]):
@@ -41,6 +41,8 @@ class GSM8K(STEMScenario):
 
             if question in questions:
                 continue
+
+            questions.add(question)
 
             self.items.append({"question": question, "reference": reference})
 

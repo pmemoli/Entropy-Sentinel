@@ -22,7 +22,7 @@ class MATH(STEMScenario):
 
         tensor_files = os.listdir(file_path)
 
-        questions = []
+        questions = set()
         for file in tensor_files:
             print(f"Detected file: {file}")
 
@@ -31,7 +31,7 @@ class MATH(STEMScenario):
 
             for tensor_item in tensor:
                 question = tensor_item["prompt"].strip()
-                questions.append(question)
+                questions.add(question)
 
         dataset = datasets.load_dataset("nlile/hendrycks-MATH-benchmark")
         for item in list(dataset[split]):
@@ -40,6 +40,8 @@ class MATH(STEMScenario):
 
             if question in questions:
                 continue
+
+            questions.add(question)
 
             self.items.append({"question": question, "reference": reference})
 

@@ -23,7 +23,7 @@ class THEOREMQA(STEMScenario):
 
         tensor_files = os.listdir(file_path)
 
-        questions = []
+        questions = set()
 
         if file_path:
             for file in tensor_files:
@@ -34,7 +34,7 @@ class THEOREMQA(STEMScenario):
 
                 for tensor_item in tensor:
                     question = tensor_item["prompt"].strip()
-                    questions.append(question)
+                    questions.add(question)
 
         dataset = datasets.load_dataset("TIGER-Lab/TheoremQA")
         for item in list(dataset["test"]):
@@ -43,6 +43,8 @@ class THEOREMQA(STEMScenario):
 
             if question in questions or item["Picture"] is not None:
                 continue
+
+            questions.add(question)
 
             self.items.append({"question": question, "reference": reference})
 

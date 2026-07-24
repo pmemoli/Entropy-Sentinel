@@ -56,7 +56,7 @@ def run_training(
         if suite_cache is not None and suite in suite_cache:
             raw_data = list(suite_cache[suite])
         else:
-            data_path = f"src/data/features/{suite}.pt"
+            data_path = f"../data_backup/data/features/{suite}.pt"
             raw_data = torch.load(data_path)
 
         if "test" in suite:

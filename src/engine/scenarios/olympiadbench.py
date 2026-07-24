@@ -25,7 +25,7 @@ class OLYMPIADBENCH(STEMScenario):
 
         tensor_files = os.listdir(file_path)
 
-        questions = []
+        questions = set()
         for file in tensor_files:
             print(f"Processing file: {file}")
 
@@ -34,7 +34,7 @@ class OLYMPIADBENCH(STEMScenario):
 
             for tensor_item in tensor:
                 question = tensor_item["prompt"].strip()
-                questions.append(question)
+                questions.add(question)
 
         for subject in ["OE_TO_maths_en_COMP", "OE_TO_physics_en_COMP"]:
             dataset = datasets.load_dataset("Hothan/OlympiadBench", subject)
@@ -45,6 +45,8 @@ class OLYMPIADBENCH(STEMScenario):
 
                 if question in questions:
                     continue
+
+                questions.add(question)
 
                 self.items.append(
                     {"question": question, "reference": reference}
@@ -59,6 +61,8 @@ class OLYMPIADBENCH(STEMScenario):
 
                 if question in questions:
                     continue
+
+                questions.add(question)
 
                 self.items.append(
                     {"question": question, "reference": reference}
