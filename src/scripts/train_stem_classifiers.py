@@ -5,7 +5,7 @@ import os
 import numpy as np
 import torch
 from itertools import product, combinations
-from scipy.stats import spearmanr
+from scipy.stats import pearsonr
 from src.engine.train_stem_entropy_sentinel import run_training, Model
 
 train_suites = [
@@ -90,7 +90,7 @@ csv_fields = [
     "calibrate",
     "balance_classes",
     "features",
-    "spearman_rho",
+    "pearson_r",
     "mae",
 ]
 
@@ -162,7 +162,7 @@ def evaluate_config(clf, scaler, llm, benchmarks, feature_indices):
     real_vals = list(real_accs.values())
     est_vals = list(est_accs.values())
 
-    rho = spearmanr(real_vals, est_vals)[0]
+    rho = pearsonr(real_vals, est_vals)[0]
     mae = float(np.mean(np.abs(np.array(real_vals) - np.array(est_vals))))
 
     return float(rho), mae
@@ -265,7 +265,7 @@ for llm, benchmarks, clf_name, cal, bal, feat_idx in product(
             "calibrate": cal,
             "balance_classes": bal,
             "features": " ".join(feat_subset),
-            "spearman_rho": rho,
+            "pearson_r": rho,
             "mae": mae,
         }
     )
