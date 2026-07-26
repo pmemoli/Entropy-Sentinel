@@ -4,7 +4,7 @@ This repository contains the code for reproducing the experiments from the paper
 
 ## Overview
 
-Entropy Sentinel investigates whether the **decoding entropy trace** of a language model — the sequence of Shannon entropies of the token distribution at each generation step — carries enough signal to estimate whether an answer is correct, without access to a ground-truth label at inference time.
+Entropy Sentinel investigates whether the **decoding entropy trace** of a language model carries enough signal to estimate whether an answer is correct, without access to a ground-truth label at inference time.
 
 For every generation we store the entropy profile and the selected-token log-probabilities, summarize them into a compact feature vector (distribution statistics plus standard uncertainty-quantification baselines), and train lightweight classifiers/regressors to predict a judged quality label. The project covers two settings:
 
@@ -13,7 +13,7 @@ For every generation we store the entropy profile and the selected-token log-pro
 
 ## Data
 
-The generated data (model runs, extracted features, trained models, sensitivity sweeps) is **not** stored in this repository — it is large and lives on Google Drive:
+The generated data (model runs, extracted features, trained models, sensitivity sweeps) is **not** stored in this repository, it is large and lives on Google Drive:
 
 **https://drive.google.com/drive/u/0/folders/1GiVLBkOZktWzH863FVqBIs_kBoDQeGDA**
 
