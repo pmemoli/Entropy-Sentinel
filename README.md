@@ -115,12 +115,17 @@ uv run python -m src.scripts.train_monitoring_classifiers
 
 ### Analysis
 
-The scripts in `src/analysis/` regenerate the figures, tables, and summary CSVs committed under `src/results/`:
+The scripts in `src/analysis/` regenerate the paper's tables and figures into `src/results/`:
 
 ```bash
-uv run python -m src.analysis.stemqa_analysis            # STEM figures/tables
-uv run python -m src.analysis.monitoring_analysis        # Monitoring (LOCO) figures/tables
-uv run python -m src.analysis.temp_sensitivity_analysis  # Temperature/seed sensitivity
+uv run python -m src.analysis.metric_predictive_power.metric_power         # Tables 1, 10
+uv run python -m src.analysis.metric_predictive_power.max_entropy_density  # Figure 2
+uv run python -m src.analysis.metric_predictive_power.truncation_ablation  # Table 8
+uv run python -m src.analysis.stemqa_analysis                              # Tables 2, 3, 5; Figures 1, 3, 5
+uv run python -m src.analysis.stemqa_composition_tables                    # Tables 4, 11
+uv run python -m src.analysis.temp_sensitivity_analysis                    # Table 9
+uv run python -m src.analysis.monitoring_analysis                          # Tables 7, 12; Figure 4
+uv run python -m src.analysis.monitoring_significance                      # Table 6
 ```
 
 ## Models and Benchmarks
@@ -152,4 +157,3 @@ Ablations train on subsets of these (e.g. entropy-only vs. entropy + UQ baseline
 - The generation stages process many model × benchmark combinations and can take several hours on GPU.
 - Judge and feature stages skip suites that fail, and training skips artifacts that already exist, so interrupted runs can be resumed.
 - `make sync` / `make first-sync` / `make terminate-sync` / `make ssh` are convenience helpers for mirroring the working tree to a remote GPU host via [mutagen](https://mutagen.io/) (they require `HOST` in `.env`) and are not needed to reproduce results.
-```

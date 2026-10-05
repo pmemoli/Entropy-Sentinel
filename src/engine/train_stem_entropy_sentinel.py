@@ -6,7 +6,7 @@ from sklearn.utils import shuffle
 from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.calibration import CalibratedClassifierCV
-from sklearn.model_selection import GridSearchCV, StratifiedShuffleSplit
+from sklearn.model_selection import GridSearchCV
 from sklearn.neural_network import MLPClassifier
 
 from imblearn.over_sampling import RandomOverSampler
@@ -49,6 +49,7 @@ def run_training(
     feature_subset: list[str] | None = None,
     suite_cache: dict | None = None,
     save_model: bool = True,
+    search_cv=None,
 ):
     X_list = []
     y_list = []
@@ -56,7 +57,7 @@ def run_training(
         if suite_cache is not None and suite in suite_cache:
             raw_data = list(suite_cache[suite])
         else:
-            data_path = f"../data_backup/data/features/{suite}.pt"
+            data_path = f"src/data/features/{suite}.pt"
             raw_data = torch.load(data_path)
 
         if "test" in suite:
@@ -133,22 +134,16 @@ def run_training(
             ],
         }
 
-    if min_class_count < 2:
+    cv_folds = min(5, min_class_count)
+    if cv_folds < 2:
         print("Not enough samples to perform cross-validation.")
         return None, None
-
-    # Single held-out validation split instead of k-fold: the grid is coarse
-    # and this runs across 166k (llm, benchmark, feature) combos, so a
-    # noisier per-config pick washes out in aggregate - not worth 5x the fits.
-    search_cv = StratifiedShuffleSplit(
-        n_splits=1, test_size=0.3, random_state=42
-    )
 
     grid_search = GridSearchCV(
         estimator=base_model,
         param_grid=param_grid,
         scoring="roc_auc",
-        cv=search_cv,
+        cv=cv_folds if search_cv is None else search_cv,
         verbose=0,
         n_jobs=-1,
     )
@@ -160,7 +155,6 @@ def run_training(
     trained_model = grid_search.best_estimator_
 
     if calibrate:
-        cv_folds = min(5, min_class_count)
         calibrator = CalibratedClassifierCV(
             estimator=trained_model, method="sigmoid", cv=cv_folds
         )

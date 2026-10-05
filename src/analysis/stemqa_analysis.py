@@ -269,60 +269,6 @@ def plot_benchmark_estimation(ax, llm, config, s_train=55, s_ood=70):
     )
 
 
-fig, axes = plt.subplots(3, 3, figsize=(15, 15))
-
-for ax, llm in zip(axes.ravel(), llms):
-    plot_benchmark_estimation(ax, llm, extremes_config)
-
-handles, labels = axes.ravel()[0].get_legend_handles_labels()
-fig.legend(
-    handles,
-    labels,
-    loc="upper center",
-    ncol=2,
-    fontsize=13,
-    bbox_to_anchor=(0.5, 0.95),
-)
-
-fig.supxlabel("Estimated Accuracy (Expected)", fontsize=14)
-fig.supylabel("Real Accuracy (Ground Truth)", fontsize=14)
-fig.suptitle(
-    "Cross-Domain Accuracy Estimation — Extremes (GSM8K + OlympiadBench)",
-    fontsize=16,
-    fontweight="bold",
-)
-fig.tight_layout(rect=[0.02, 0.02, 1, 0.93])
-fig.savefig("src/results/stemqa_extremes_all_models.png", dpi=200)
-plt.show()
-
-# %% Figure for PHI 3B, MINISTRAL3 8B and GEMMA 12B in a row
-highlight_llms = ["phi3-3b", "ministral3-8b", "gemma3-12b"]
-
-fig, axes = plt.subplots(1, 3, figsize=(15, 5.5))
-
-for ax, llm in zip(axes, highlight_llms):
-    plot_benchmark_estimation(ax, llm, extremes_config)
-
-handles, labels = axes[0].get_legend_handles_labels()
-fig.legend(
-    handles,
-    labels,
-    loc="upper center",
-    ncol=2,
-    fontsize=12,
-    bbox_to_anchor=(0.5, 0.92),
-)
-
-fig.supxlabel("Estimated Accuracy (Expected)", fontsize=13)
-fig.supylabel("Real Accuracy (Ground Truth)", fontsize=13)
-fig.suptitle(
-    "Cross-Domain Accuracy Estimation — Extremes (GSM8K + OlympiadBench)",
-    fontsize=15,
-    fontweight="bold",
-)
-fig.tight_layout(rect=[0.02, 0.02, 1, 0.82])
-fig.savefig("src/results/stemqa_extremes_highlight_row.png", dpi=200)
-plt.show()
 
 # %% Same but only PHI 3.5
 fig, ax = plt.subplots(figsize=(7, 7))
@@ -569,7 +515,7 @@ def suite_split(llm, suite, which):
     return X, y
 
 
-def atc_all_features_mae(llm, benchmarks, atc_features=None):
+def atc_all_features_mae(llm, benchmarks, atc_features=None, ood_only=False):
     """ATC MAE over all eval suites, once per feature used as the confidence
     score. Each feature is oriented (sign) by its source-set association with
     correctness, then thresholded on the in-domain (source) split so the
@@ -594,6 +540,8 @@ def atc_all_features_mae(llm, benchmarks, atc_features=None):
 
     eval_data = []
     for suite in eval_suites:
+        if ood_only and suite in train_benchmarks:
+            continue
         which = "test" if suite in train_benchmarks else "full"
         X, y = suite_split(llm, suite, which)
         eval_data.append((X, float(y.mean())))
@@ -625,60 +573,50 @@ def median_iqr(series):
     return q50, q75 - q25
 
 
-# %% RQ2 deployment comparison: ES vs ATC on the Extremes + Intermediate configs
-"""
-Same two deployment scenarios as RQ1 (Extremes, Intermediate), fixed RQ1
-config. ATC is held to the SAME feature subset ES uses (feature_size), so both
-methods see identical features and calibrate on the same in-domain source; ATC
-just thresholds each feature instead of learning an RF. Reported per model
-(9 points, so we count wins rather than quoting an IQR).
-"""
-
+# %% RQ2 Table 3 regime columns: ES vs ATC on Extremes / Intermediate, OOD suites only
 deployment_configs = {
     "extremes": extremes_config,
     "intermediate": intermediate_config,
 }
 
-deployment_records = []
+
+def es_ood_mae(llm, config):
+    real_accs, est_accs = get_benchmark_estimates_from_model(llm, config)
+    ood = [s for s in eval_suites if s not in config["train_benchmarks"]]
+    return float(np.mean([abs(real_accs[s] - est_accs[s]) for s in ood]))
+
+
+regime_records = []
 for dep_name, config in deployment_configs.items():
-    atc_features = feature_names[: config["feature_size"]]
     for llm in llms:
-        _, es_mae = model_config_results_from_model(llm, config)
-        record = {"deployment": dep_name, "llm": llm, "es_mae": es_mae}
+        record = {
+            "deployment": dep_name,
+            "llm": llm,
+            "es_mae": es_ood_mae(llm, config),
+        }
         atc_maes = atc_all_features_mae(
-            llm, config["train_benchmarks"], atc_features
+            llm, config["train_benchmarks"], ood_only=True
         )
         for fname, mae in atc_maes.items():
             record[f"atc_{fname}"] = mae
-        deployment_records.append(record)
+        regime_records.append(record)
 
-deployment_df = pd.DataFrame(deployment_records)
-atc_feat_cols = [c for c in deployment_df.columns if c.startswith("atc_")]
-deployment_df["best_atc"] = deployment_df[atc_feat_cols].min(axis=1)
-deployment_df["best_atc_feat"] = (
-    deployment_df[atc_feat_cols].idxmin(axis=1).str.replace("atc_", "")
-)
-deployment_df.to_csv(
-    "src/results/stemqa_es_vs_atc_deployment_per_model.csv", index=False
-)
+regime_df = pd.DataFrame(regime_records)
+regime_rows = []
+for method_col in ["es_mae"] + [f"atc_{f}" for f in feature_names]:
+    method = "ES" if method_col == "es_mae" else f"ATC[{method_col[4:]}]"
+    row = {"method": method}
+    for dep_name in deployment_configs:
+        med, iqr = median_iqr(
+            regime_df.loc[regime_df["deployment"] == dep_name, method_col]
+        )
+        row[f"{dep_name}_mae_median"] = med
+        row[f"{dep_name}_mae_iqr"] = iqr
+    regime_rows.append(row)
 
-for dep_name in deployment_configs:
-    sub = deployment_df[deployment_df["deployment"] == dep_name]
-    n_max = int((sub["es_mae"] < sub["atc_max"]).sum())
-    n_best = int((sub["es_mae"] < sub["best_atc"]).sum())
-    print(
-        f"\n=== {dep_name} (ATC on RQ1 {config['feature_size']}-feature "
-        f"subset) ===\n"
-        f"ES beats ATC[max]: {n_max}/{len(sub)}   "
-        f"ES beats best-ATC: {n_best}/{len(sub)}"
-    )
-    print(
-        sub.set_index("llm")[
-            ["es_mae", "atc_max", "best_atc", "best_atc_feat"]
-        ]
-        .round(4)
-        .to_string()
-    )
+regime_table = pd.DataFrame(regime_rows)
+regime_table.to_csv("src/results/stemqa_es_vs_atc_deployment.csv", index=False)
+print(regime_table.round(4).to_string(index=False))
 
 
 # %% RQ2 full sweep: ES vs ATC across all training compositions
@@ -833,13 +771,11 @@ rq3_difficulty_figure(
     "src/results/all_llm_accuracy.png",
     "src/results/stemqa_rq3_difficulty_vs_mae.csv",
 )
-rq3_difficulty_figure(2, "src/results/all_llm_accuracy_k2.png")
-rq3_difficulty_figure(4, "src/results/all_llm_accuracy_k4.png")
 
 
 # %% RQ4: How sensitive is ES to estimator design
 """
-Estimator-design main effects: median MAE and Spearman rho (IQR as spread),
+Estimator-design main effects: median MAE (IQR as spread),
 marginalized over all training groups and models. Each factor level pools every
 sweep row sharing that level, aggregating over the other design axes.
 """
@@ -860,15 +796,12 @@ def ablation_rows(factor, column, levels):
     for level, label in levels:
         sub = ablation_df[ablation_df[column] == level]
         mae_med, mae_iqr = med_iqr(sub["mae"])
-        rho_med, rho_iqr = med_iqr(sub["spearman_rho"])
         rows.append(
             {
                 "factor": factor,
                 "setting": label,
                 "mae_median": mae_med,
                 "mae_iqr": mae_iqr,
-                "rho_median": rho_med,
-                "rho_iqr": rho_iqr,
                 "n": len(sub),
             }
         )
@@ -915,9 +848,6 @@ best_clf = min(["RF", "LR", "MLP"], key=lambda s: R[("Classifier", s)]["mae_medi
 best_feat_mae = min(
     ["17D", "10D", "3D", "1D"], key=lambda s: R[("Features", s)]["mae_median"]
 )
-best_feat_rho = max(
-    ["17D", "10D", "3D", "1D"], key=lambda s: R[("Features", s)]["rho_median"]
-)
 
 
 def _mae(f, s):
@@ -928,28 +858,22 @@ def _mae(f, s):
     return _cell(r["mae_median"], r["mae_iqr"], bold)
 
 
-def _rho(f, s):
-    r = R[(f, s)]
-    bold = f == "Features" and s == best_feat_rho
-    return _cell(r["rho_median"], r["rho_iqr"], bold)
-
-
 latex = [
-    "\\begin{tabular}{llcc}",
+    "\\begin{tabular}{llc}",
     "\\toprule",
-    "\\textbf{Factor} & \\textbf{Setting} & \\textbf{MAE} & \\textbf{$\\rho$} \\\\",
+    "\\textbf{Factor} & \\textbf{Setting} & \\textbf{MAE} \\\\",
     "\\midrule",
-    f"\\multirow{{3}}{{*}}{{Classifier}} & RF & {_mae('Classifier','RF')} & {_rho('Classifier','RF')} \\\\",
-    f"& LR & {_mae('Classifier','LR')} & {_rho('Classifier','LR')} \\\\",
-    f"& MLP & {_mae('Classifier','MLP')} & {_rho('Classifier','MLP')} \\\\",
+    f"\\multirow{{3}}{{*}}{{Classifier}} & RF & {_mae('Classifier','RF')} \\\\",
+    f"& LR & {_mae('Classifier','LR')} \\\\",
+    f"& MLP & {_mae('Classifier','MLP')} \\\\",
     "\\midrule",
-    f"Calibration & Y / N & {_mae('Calibration','Y')} / {_mae('Calibration','N')} & {_rho('Calibration','Y')} / {_rho('Calibration','N')} \\\\",
-    f"Balancing & Y / N & {_mae('Balancing','Y')} / {_mae('Balancing','N')} & {_rho('Balancing','Y')} / {_rho('Balancing','N')} \\\\",
+    f"Calibration & Y / N & {_mae('Calibration','Y')} / {_mae('Calibration','N')} \\\\",
+    f"Balancing & Y / N & {_mae('Balancing','Y')} / {_mae('Balancing','N')} \\\\",
     "\\midrule",
-    f"\\multirow{{4}}{{*}}{{Features}} & 17D & {_mae('Features','17D')} & {_rho('Features','17D')} \\\\",
-    f"& 10D & {_mae('Features','10D')} & {_rho('Features','10D')} \\\\",
-    f"& 3D & {_mae('Features','3D')} & {_rho('Features','3D')} \\\\",
-    f"& 1D & {_mae('Features','1D')} & {_rho('Features','1D')} \\\\",
+    f"\\multirow{{4}}{{*}}{{Features}} & 17D & {_mae('Features','17D')} \\\\",
+    f"& 10D & {_mae('Features','10D')} \\\\",
+    f"& 3D & {_mae('Features','3D')} \\\\",
+    f"& 1D & {_mae('Features','1D')} \\\\",
     "\\bottomrule",
     "\\end{tabular}",
 ]

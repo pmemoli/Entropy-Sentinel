@@ -188,27 +188,6 @@ def collect_prompts(suite_dir):
     return {it["prompt"] for it in _iter_dir_items(suite_dir)}
 
 
-def aggregate_across_seeds(df: pd.DataFrame) -> pd.DataFrame:
-    """Mean and std of AUROC across seeds, per temperature × metric."""
-    id_vars = [c for c in ("temperature", "seed", "source", "n_samples", "accuracy") if c in df.columns]
-    long = df.melt(
-        id_vars=id_vars,
-        value_vars=METRIC_NAMES,
-        var_name="metric",
-        value_name="auroc",
-    )
-    agg = (
-        long.groupby(["temperature", "metric"])
-        .agg(
-            auroc_mean=("auroc", "mean"),
-            auroc_std=("auroc", "std"),
-            n_seeds=("auroc", "count"),
-        )
-        .reset_index()
-    )
-    return agg
-
-
 def main():
     p = argparse.ArgumentParser(
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
@@ -289,15 +268,8 @@ def main():
     print(f"\nSaved {len(df)} per-(T,seed) rows to {args.output}")
 
     if not df.empty:
-        agg = aggregate_across_seeds(df)
-        agg_path = args.output.replace(".csv", "_by_temperature.csv")
-        agg.to_csv(agg_path, index=False)
-        print(f"Saved {len(agg)} aggregated rows to {agg_path}")
-
         print("\nPer-(T,seed):")
         print(df.to_string(index=False, float_format=lambda x: f"{x:.4f}"))
-        print("\nAggregated over seeds:")
-        print(agg.to_string(index=False, float_format=lambda x: f"{x:.4f}"))
 
 
 if __name__ == "__main__":

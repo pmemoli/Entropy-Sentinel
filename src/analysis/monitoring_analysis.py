@@ -233,7 +233,7 @@ def prettify(name: str) -> str:
     return name.replace("_", " ").replace("-", " ").title()
 
 
-for SUITE in SUITES:
+for SUITE in ["phi3-3b-wildbench-test"]:
     OOD_real_scores = loco_results[SUITE]["real_scores"]
     OOD_centered_scores = loco_results[SUITE]["centered_scores"]
 
@@ -330,88 +330,6 @@ for SUITE in SUITES:
     plt.tight_layout()
     fig.savefig(f"src/results/{SUITE}-loco-ranking.png", dpi=200)
     plt.show()
-
-
-# %% All models in a 3x3 grid (sorted by Pearson r)
-grid_suites = sorted(
-    SUITES, key=lambda s: loco_results[s]["pearson_r"], reverse=True
-)
-
-fig, axes = plt.subplots(3, 3, figsize=(15, 15))
-for ax, SUITE in zip(axes.ravel(), grid_suites):
-    OOD_real_scores = loco_results[SUITE]["real_scores"]
-    OOD_centered_scores = loco_results[SUITE]["centered_scores"]
-
-    categories_order = list(OOD_real_scores.keys())
-    real_vals = np.array([OOD_real_scores[c] for c in categories_order])
-    est_vals = np.array([OOD_centered_scores[c] for c in categories_order])
-
-    n = len(real_vals)
-    real_dev = np.array(
-        [real_vals[i] - np.delete(real_vals, i).mean() for i in range(n)]
-    )
-    real_z = (real_dev - real_dev.mean()) / (real_dev.std() + 1e-9)
-    est_z = (est_vals - est_vals.mean()) / (est_vals.std() + 1e-9)
-
-    loco_r = loco_results[SUITE]["pearson_r"]
-    loco_p = loco_results[SUITE]["pearson_p"]
-
-    lim = max(np.abs(real_z).max(), np.abs(est_z).max()) * 1.15
-    ax.plot(
-        [-lim, lim],
-        [-lim, lim],
-        color="#e74c3c",
-        linestyle="--",
-        alpha=0.6,
-        zorder=1,
-    )
-    ax.axhline(0, color="gray", linewidth=1, alpha=0.4, zorder=1)
-    ax.axvline(0, color="gray", linewidth=1, alpha=0.4, zorder=1)
-
-    ax.scatter(
-        real_z,
-        est_z,
-        color="#4682B4",
-        marker="o",
-        s=70,
-        alpha=1,
-        edgecolors="white",
-        linewidths=1.2,
-        zorder=4,
-    )
-
-    ax.set_xlim(-lim, lim)
-    ax.set_ylim(-lim, lim)
-    ax.set_aspect("equal")
-    ax.grid(True, linestyle=":", alpha=0.5, color="gray")
-    ax.set_title(
-        SUITE.replace("-wildbench-test", ""), fontsize=13, fontweight="bold"
-    )
-    ax.text(
-        0.05,
-        0.95,
-        f"r = {loco_r:.2f} (p={loco_p:.3f})",
-        transform=ax.transAxes,
-        verticalalignment="top",
-        bbox=dict(
-            boxstyle="round",
-            facecolor="white",
-            alpha=0.85,
-            edgecolor="lightgray",
-        ),
-        fontsize=10,
-    )
-
-fig.supxlabel("True Score − Train Baseline (z-scored)", fontsize=14)
-fig.supylabel("Estimate Relative to Train Baseline (z-scored)", fontsize=14)
-fig.suptitle(
-    "Leave-One-Category-Out category-level quality estimation",
-    fontsize=16,
-    fontweight="bold",
-)
-fig.tight_layout(rect=[0.02, 0.02, 1, 0.98])
-fig.savefig("src/results/loco_monitoring_grid.png", dpi=200)
-plt.show()
 
 
 # %% Length ablation

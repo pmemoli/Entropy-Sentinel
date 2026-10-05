@@ -5,7 +5,8 @@ import os
 import numpy as np
 import torch
 from itertools import product, combinations
-from scipy.stats import pearsonr
+from scipy.stats import spearmanr
+from sklearn.model_selection import StratifiedShuffleSplit
 from src.engine.train_stem_entropy_sentinel import run_training, Model
 
 train_suites = [
@@ -90,7 +91,7 @@ csv_fields = [
     "calibrate",
     "balance_classes",
     "features",
-    "pearson_r",
+    "spearman_rho",
     "mae",
 ]
 
@@ -113,7 +114,7 @@ suite_cache = {}
 for llm in llms:
     for benchmark in train_suites:
         suite_key = f"{llm}-{benchmark}"
-        path = f"../data_backup/data/features/{suite_key}.pt"
+        path = f"src/data/features/{suite_key}.pt"
         if os.path.exists(path):
             suite_cache[suite_key] = torch.load(path)
 print(f"Loaded {len(suite_cache)} feature files.")
@@ -162,7 +163,7 @@ def evaluate_config(clf, scaler, llm, benchmarks, feature_indices):
     real_vals = list(real_accs.values())
     est_vals = list(est_accs.values())
 
-    rho = pearsonr(real_vals, est_vals)[0]
+    rho = spearmanr(real_vals, est_vals)[0]
     mae = float(np.mean(np.abs(np.array(real_vals) - np.array(est_vals))))
 
     return float(rho), mae
@@ -233,6 +234,9 @@ for llm, benchmarks, clf_name, cal, bal, feat_idx in product(
             feature_subset=feat_subset,
             suite_cache=suite_cache,
             save_model=SAVE_MODELS,
+            search_cv=StratifiedShuffleSplit(
+                n_splits=1, test_size=0.3, random_state=42
+            ),
         )
 
         if trained_model is None:
@@ -265,7 +269,7 @@ for llm, benchmarks, clf_name, cal, bal, feat_idx in product(
             "calibrate": cal,
             "balance_classes": bal,
             "features": " ".join(feat_subset),
-            "pearson_r": rho,
+            "spearman_rho": rho,
             "mae": mae,
         }
     )
