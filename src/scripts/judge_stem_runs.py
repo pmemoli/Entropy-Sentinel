@@ -1,3 +1,5 @@
+import sys
+
 from src.engine.judge_stem_scenarios import evaluate_suite
 
 SUITES = [
@@ -136,12 +138,14 @@ SUITES = [
 
 
 def main():
+    include_judged = "--include_judged" in sys.argv
+
     for suite in SUITES:
         print(f"Processing suite: {suite}")
 
         # A missing or malformed suite shouldn't take down the whole sweep.
         try:
-            evaluate_suite(suite)
+            evaluate_suite(suite, include_judged)
         except Exception as e:
             print(f"  FAILED {suite}: {e}")
             continue

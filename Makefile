@@ -6,11 +6,16 @@ CUDA_VISIBLE_DEVICES ?= 0
 
 PYTHON ?= uv run python
 
+REMOTE_DIR ?= ~/Documents/entropy_is_enough
+
 run-stem:
 	bash src/scripts/run_stem_scenarios.sh
 
+regenerate-truncated-stem:
+	bash src/scripts/regenerate_truncated_stem.sh
+
 judge-stem:
-	$(PYTHON) -m src.scripts.judge_stem_runs
+	$(PYTHON) -m src.scripts.judge_stem_runs $(JUDGE_ARGS)
 
 features-stem:
 	$(PYTHON) -m src.scripts.generate_stem_features
@@ -54,9 +59,19 @@ first-sync:
 terminate-sync:
 	mutagen sync terminate entropy-sentinel
 
+compile-latex recompile-latex clean-latex:
+	$(MAKE) -C paper $@
+
 ssh:
 	ssh $(HOST)
 
-.PHONY: run-stem judge-stem features-stem classifiers-stem audit-stem sensitivity-stem \
+remote:
+	ssh -t $(HOST) 'cd $(REMOTE_DIR) && bash -lc "$(CMD)"'
+
+remote-%:
+	ssh -t $(HOST) 'cd $(REMOTE_DIR) && bash -lc "make $*"'
+
+.PHONY: run-stem regenerate-truncated-stem judge-stem features-stem classifiers-stem audit-stem sensitivity-stem \
 		run-monitoring judge-monitoring features-monitoring classifiers-monitoring \
-		pipeline-stem pipeline-monitoring sync first-sync terminate-sync
+		pipeline-stem pipeline-monitoring sync first-sync terminate-sync ssh remote \
+		compile-latex recompile-latex clean-latex
