@@ -1,0 +1,452 @@
+{
+ "section_3": {
+  "sensitivity_range": {
+   "Q10": [
+    0.8,
+    0.837
+   ],
+   "Q25": [
+    0.782,
+    0.823
+   ],
+   "SEA": [
+    0.787,
+    0.839
+   ],
+   "NLL$_{\\text{sum}}$": [
+    0.769,
+    0.83
+   ]
+  },
+  "appendix_top3_statistics": {
+   "ministral3-3b/mathhendrycks": [
+    "q10",
+    "q25",
+    "SEA"
+   ],
+   "ministral3-3b/gsm": [
+    "SEA",
+    "std",
+    "NLLsum"
+   ],
+   "qwen3-8b/mathhendrycks": [
+    "NLLsum",
+    "SEA",
+    "max"
+   ],
+   "qwen3-8b/gsm": [
+    "NLLsum",
+    "SEA",
+    "std"
+   ],
+   "qwen3-4b/mathhendrycks": [
+    "NLLsum",
+    "SEA",
+    "max"
+   ],
+   "qwen3-4b/gsm": [
+    "SEA",
+    "std",
+    "max"
+   ],
+   "llama3-8b/mathhendrycks": [
+    "SEA",
+    "NLLsum",
+    "max"
+   ],
+   "llama3-8b/gsm": [
+    "SEA",
+    "NLLsum",
+    "std"
+   ],
+   "gemma3-4b/mathhendrycks": [
+    "SEA",
+    "NLLsum",
+    "max"
+   ],
+   "gemma3-4b/gsm": [
+    "NLLsum",
+    "SEA",
+    "q25"
+   ],
+   "gemma3-12b/mathhendrycks": [
+    "SEA",
+    "NLLsum",
+    "q25"
+   ],
+   "gemma3-12b/gsm": [
+    "q25",
+    "q10",
+    "SEA"
+   ]
+  }
+ },
+ "section_4": {
+  "probe_mae_by_k": {
+   "1": 0.1327,
+   "2": 0.094,
+   "3": 0.0868,
+   "4": 0.0845
+  },
+  "k3plus": {
+   "probe": 0.0853,
+   "atc_best": 0.1111,
+   "gain": 0.2323,
+   "win": 0.7822,
+   "oracle": 0.0891,
+   "atc_max": 0.1022
+  },
+  "k3_per_llm": {
+   "probe_beats_atc_best": 9,
+   "llama_gap": -0.0008,
+   "mean_gain": 0.1859,
+   "r": {
+    "gemma3-12b": 0.9742,
+    "gemma3-4b": 0.9814,
+    "llama3-8b": 0.9832,
+    "ministral3-3b": 0.9615,
+    "ministral3-8b": 0.9437,
+    "oss-20b": 0.8379,
+    "phi3-3b": 0.9845,
+    "qwen3-4b": 0.8903,
+    "qwen3-8b": 0.9881
+   }
+  },
+  "bootstrap_gain_median": 0.0197,
+  "bootstrap_gain_ci": [
+   0.0103,
+   0.0285
+  ],
+  "group_spread_iqr_by_k": {
+   "1": 0.1001,
+   "2": 0.0487,
+   "3": 0.0319,
+   "4": 0.0269
+  },
+  "averaging_minus_threshold_by_k": {
+   "1": 0.0172,
+   "2": 0.0255,
+   "3": 0.0219,
+   "4": 0.0174
+  },
+  "mae_by_weighted_accuracy": {
+   "(0.0, 0.1]": {
+    "thr": 0.106,
+    "avg": 0.141,
+    "n": 19
+   },
+   "(0.1, 0.2]": {
+    "thr": 0.082,
+    "avg": 0.115,
+    "n": 150
+   },
+   "(0.2, 0.3]": {
+    "thr": 0.073,
+    "avg": 0.109,
+    "n": 231
+   },
+   "(0.3, 0.4]": {
+    "thr": 0.074,
+    "avg": 0.102,
+    "n": 297
+   },
+   "(0.4, 0.5]": {
+    "thr": 0.08,
+    "avg": 0.094,
+    "n": 417
+   },
+   "(0.5, 0.6]": {
+    "thr": 0.083,
+    "avg": 0.084,
+    "n": 544
+   },
+   "(0.6, 0.7]": {
+    "thr": 0.084,
+    "avg": 0.092,
+    "n": 585
+   },
+   "(0.7, 0.8]": {
+    "thr": 0.1,
+    "avg": 0.117,
+    "n": 615
+   },
+   "(0.8, 0.9]": {
+    "thr": 0.115,
+    "avg": 0.143,
+    "n": 449
+   },
+   "(0.9, 1.0]": {
+    "thr": 0.122,
+    "avg": 0.135,
+    "n": 68
+   }
+  },
+  "ablation_k3plus": {
+   "GBM": 0.0853,
+   "GBM10": 0.0838,
+   "GBM3": 0.1003,
+   "RF": 0.0938,
+   "LR": 0.0942
+  },
+  "label_crossover_n": 10.9,
+  "a_priori_mae_per_llm": {
+   "extremes": {
+    "gemma3-12b": 0.089,
+    "gemma3-4b": 0.079,
+    "llama3-8b": 0.058,
+    "ministral3-3b": 0.115,
+    "ministral3-8b": 0.119,
+    "oss-20b": 0.183,
+    "phi3-3b": 0.09,
+    "qwen3-4b": 0.182,
+    "qwen3-8b": 0.094
+   },
+   "midrange": {
+    "gemma3-12b": 0.064,
+    "gemma3-4b": 0.087,
+    "llama3-8b": 0.044,
+    "ministral3-3b": 0.061,
+    "ministral3-8b": 0.053,
+    "oss-20b": 0.086,
+    "phi3-3b": 0.06,
+    "qwen3-4b": 0.075,
+    "qwen3-8b": 0.04
+   }
+  },
+  "sibling_excluded": {
+   "probe": 0.0925,
+   "atc_best": 0.1242
+  },
+  "family_removed": {
+   "probe": 0.0835,
+   "atc_best": 0.1214
+  },
+  "decoupling": {
+   "Extremes": {
+    "r2_threshold": 0.119,
+    "r2_averaging": 0.013
+   },
+   "Mid-range": {
+    "r2_threshold": 0.091,
+    "r2_averaging": 0.001
+   },
+   "auroc_range": [
+    0.474,
+    0.925
+   ],
+   "probe_auroc_median": 0.725,
+   "sea_auroc_median": 0.744
+  },
+  "length_atc_k3": 0.1481,
+  "trigger_then_judge": {
+   "gsm_to_symbolic": {
+    "judged_per_window": 1.917,
+    "false_alarm": 0.0,
+    "power": 0.978
+   },
+   "null": {
+    "judged_per_window": 1.472,
+    "false_alarm": 0.003,
+    "power": 0.022
+   },
+   "step5": {
+    "judged_per_window": 1.333,
+    "false_alarm": 0.003,
+    "power": 0.367
+   },
+   "tilt5": {
+    "judged_per_window": 1.333,
+    "false_alarm": 0.003,
+    "power": 0.083
+   }
+  }
+ },
+ "robustness": {
+  "seed_1_k3plus": {
+   "probe": 0.0856,
+   "atc_best": 0.1098,
+   "gain": 0.2206
+  },
+  "seed_2_k3plus": {
+   "probe": 0.0856,
+   "atc_best": 0.1135,
+   "gain": 0.246
+  },
+  "truncated_removed_k3": {
+   "probe": 0.091,
+   "atc_best": 0.118,
+   "gain": 0.2288
+  },
+  "alternative_probes_k3": {
+   "base": 0.0868,
+   "monotone": 0.0868,
+   "gbm_deep": 0.0811,
+   "bag5": 0.0884,
+   "rf_deep": 0.0891,
+   "et": 0.0954,
+   "lr_poly": 0.0979,
+   "mlp": 0.1019,
+   "votes": 0.0866,
+   "ens_sel": 0.1005,
+   "ext": 0.0853,
+   "extnolen": 0.0862,
+   "agg": 0.0868,
+   "agg_mix": 0.0869,
+   "iso": 0.1077,
+   "platt": 0.111
+  }
+ },
+ "section_5": {
+  "wildbench_turns_categories": {
+   "phi3-3b": [
+    1300,
+    11
+   ],
+   "oss-20b": [
+    1300,
+    11
+   ]
+  },
+  "mtbench_phi": {
+   "n": 160,
+   "categories": 8,
+   "probe_r": 0.452,
+   "mean_entropy_r": -0.372
+  },
+  "within_coding_math_probe": {
+   "phi3-3b/Coding & Debugging": -0.161,
+   "phi3-3b/Math": -0.069,
+   "ministral3-3b/Coding & Debugging": 0.6,
+   "ministral3-3b/Math": 0.57,
+   "ministral3-8b/Coding & Debugging": 0.286,
+   "ministral3-8b/Math": 0.215,
+   "qwen3-4b/Coding & Debugging": 0.076,
+   "qwen3-4b/Math": 0.372,
+   "qwen3-8b/Coding & Debugging": 0.161,
+   "qwen3-8b/Math": 0.211,
+   "gemma3-4b/Coding & Debugging": 0.24,
+   "gemma3-4b/Math": 0.078,
+   "gemma3-12b/Coding & Debugging": 0.011,
+   "gemma3-12b/Math": 0.085,
+   "llama3-8b/Coding & Debugging": -0.102,
+   "llama3-8b/Math": 0.064,
+   "oss-20b/Coding & Debugging": 0.215,
+   "oss-20b/Math": 0.517
+  }
+ },
+ "appendix": {
+  "api": {
+   "validator_agreement": 0.908,
+   "olympiad_mean_length": 2047.0,
+   "olympiad_p95_length": 5446.0,
+   "probe_beats_constant_by_k": {
+    "1": 1.0,
+    "2": 0.7,
+    "3": 0.6
+   }
+  },
+  "regression": {
+   "full_q4": {
+    "accuracy": 0.812,
+    "lost": 46,
+    "gained": 20,
+    "mcnemar_p": 0.0019
+   },
+   "full_q8": {
+    "accuracy": 0.84,
+    "lost": 28,
+    "gained": 16,
+    "mcnemar_p": 0.0961
+   },
+   "full_paraphrase": {
+    "accuracy": 0.854,
+    "lost": 28,
+    "gained": 23,
+    "mcnemar_p": 0.5758
+   },
+   "base_accuracy": 0.864,
+   "exact_match_vs_validator": 0.978,
+   "truncated_share": {
+    "full_base": 0.006,
+    "full_q4": 0.004,
+    "full_q8": 0.008,
+    "full_paraphrase": 0.004
+   },
+   "mean_length": {
+    "calibration_math_scibench": 1776.0,
+    "bf16": 398.0
+   },
+   "mean_sea_correct": {
+    "full_base": 50.4,
+    "full_q8": 47.8
+   }
+  },
+  "qa": {
+   "transfer": {
+    "all_stem": {
+     "triviaqa": {
+      "probe": 0.959,
+      "sel": 1.0,
+      "sea": 1.0,
+      "nllsum": 1.0,
+      "avg": 0.688
+     },
+     "nqopen": {
+      "probe": 0.966,
+      "sel": 1.0,
+      "sea": 1.0,
+      "nllsum": 1.0,
+      "avg": 0.664
+     },
+     "popqa": {
+      "probe": 0.961,
+      "sel": 1.0,
+      "sea": 1.0,
+      "nllsum": 1.0,
+      "avg": 0.616
+     }
+    },
+    "midrange": {
+     "triviaqa": {
+      "probe": 0.773,
+      "sel": 0.799,
+      "sea": 0.995,
+      "nllsum": 0.995,
+      "avg": 0.645
+     },
+     "nqopen": {
+      "probe": 0.758,
+      "sel": 0.76,
+      "sea": 1.0,
+      "nllsum": 1.0,
+      "avg": 0.628
+     },
+     "popqa": {
+      "probe": 0.679,
+      "sel": 0.61,
+      "sea": 1.0,
+      "nllsum": 1.0,
+      "avg": 0.566
+     }
+    }
+   },
+   "within_median_error": {
+    "1": {
+     "e_probe": 0.111,
+     "e_sel": 0.154,
+     "e_sea": 0.198,
+     "e_nllsum": 0.196,
+     "e_avg": 0.151
+    },
+    "2": {
+     "e_probe": 0.112,
+     "e_sel": 0.117,
+     "e_sea": 0.183,
+     "e_nllsum": 0.143,
+     "e_avg": 0.197
+    }
+   },
+   "stem_mean_length_qwen3_4b": 1514.0
+  }
+ }
+}
