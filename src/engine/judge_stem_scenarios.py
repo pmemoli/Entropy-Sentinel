@@ -9,6 +9,7 @@ import os
 from dotenv import load_dotenv
 
 from .core.prompts import load_prompt
+from ..scripts.strip_truncated_stem_runs import EOS_TOKENS, is_truncated
 
 load_dotenv(override=True)
 api_key = os.getenv("OPENROUTER_KEY")  # type: ignore
@@ -69,6 +70,13 @@ def evaluate_response(
     return "true" in json_content.lower()
 
 
+def set_verdict(tensor_item, verdict):
+    tensor_item[JUDGE_KEY] = verdict
+    if "success" not in tensor_item:
+        tensor_item["success"] = verdict
+        tensor_item["judge"] = MODEL.removeprefix("openrouter/")
+
+
 def judge_item(tensor_item):
     for i in range(8):
         try:
@@ -77,10 +85,7 @@ def judge_item(tensor_item):
                 tensor_item["generation"],
                 tensor_item["reference"],
             )
-            tensor_item[JUDGE_KEY] = verdict
-            if "success" not in tensor_item:
-                tensor_item["success"] = verdict
-                tensor_item["judge"] = MODEL.removeprefix("openrouter/")
+            set_verdict(tensor_item, verdict)
             return
         except Exception as e:
             print(e)
@@ -88,10 +93,16 @@ def judge_item(tensor_item):
 
 
 def judge_batch(suite, batch):
+    eos_tokens = EOS_TOKENS[suite.split("-")[0]]
     pending = [item for _, _, items in batch for item in items]
 
+    for item in pending:
+        if is_truncated(item, eos_tokens):
+            set_verdict(item, False)
+    to_judge = [item for item in pending if JUDGE_KEY not in item]
+
     with ThreadPoolExecutor(max_workers=WORKERS) as executor:
-        list(executor.map(judge_item, pending))
+        list(executor.map(judge_item, to_judge))
 
     for full_path, tensor, _ in batch:
         torch.save(tensor, full_path)

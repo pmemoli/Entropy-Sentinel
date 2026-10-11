@@ -22,11 +22,17 @@ Download it and place it at `src/data/` so the tree looks like:
 ```
 src/data/
 ├── runs/          # Raw generations + entropy profiles per suite (.pt), from run-* steps
+├── runs.old.2048/ # Earlier generations with a 2,048-token cap (sensitivity cell and Appendix B only)
 ├── features/      # Extracted feature vectors per suite (<suite>.pt), from features-* steps
 ├── models/        # Trained classifier/regressor artifacts (.joblib), from classifier steps
 ├── sensitivity/   # Temperature/seed sweep runs (STEM), from sensitivity-stem
+├── api/           # GPT-4.1-mini generations on five STEM benchmarks and their labels (.jsonl.gz)
+├── qa/            # Qwen3-4B generations on TriviaQA, NQ-open and PopQA (.jsonl.gz)
+├── regression/    # Qwen3-4B on GSM-Symbolic: bf16, 4-bit, 8-bit and paraphrased inputs (.jsonl.gz)
 └── audit.csv      # Manual human audit of LLM-judge labels
 ```
+
+All runs use a 16,384-token generation cap. Two exhibits reuse the earlier 2,048-cap run: the seed-42 cell at T=0.5 of the temperature sensitivity table and the full-vocabulary ablation (Appendix B); the analysis reads it from `src/data/runs.old.2048/` (override with `ES_RUNS_2048`).
 
 `src/data/` is git-ignored. If you regenerate everything from scratch (see below) these directories are created automatically.
 
@@ -49,9 +55,8 @@ src/data/
 │   │   ├── train_stem_entropy_sentinel.py
 │   │   └── train_monitoring_entropy_sentinel.py
 │   ├── scripts/             # Batch drivers over the full suite list (invoked by the Makefile)
-│   ├── analysis/            # Figure/table generation from results
-│   ├── results/             # Committed figures, tables, and summary CSVs
 │   └── data/                # Generated data — download from Google Drive (git-ignored)
+├── analysis/                # Regenerates every table and figure of the paper (see Analysis)
 └── tests/                   # Scenario/loader tests
 ```
 
@@ -115,18 +120,25 @@ uv run python -m src.scripts.train_monitoring_classifiers
 
 ### Analysis
 
-The scripts in `src/analysis/` regenerate the paper's tables and figures into `src/results/`:
+The scripts in `analysis/` regenerate every table and figure of the paper from `src/data/` (override the path with `ES_DATA`):
 
 ```bash
-uv run python -m src.analysis.metric_predictive_power.metric_power         # Tables 1, 10
-uv run python -m src.analysis.metric_predictive_power.max_entropy_density  # Figure 2
-uv run python -m src.analysis.metric_predictive_power.truncation_ablation  # Table 8
-uv run python -m src.analysis.stemqa_analysis                              # Tables 2, 3, 5; Figures 1, 3, 5
-uv run python -m src.analysis.stemqa_composition_tables                    # Tables 4, 11
-uv run python -m src.analysis.temp_sensitivity_analysis                    # Table 9
-uv run python -m src.analysis.monitoring_analysis                          # Tables 7, 12; Figure 4
-uv run python -m src.analysis.monitoring_significance                      # Table 6
+make analysis          # STEM sweep (~40 min), robustness runs (~1.5 h), all tables, figures and in-text numbers
+make analysis-tables   # tables and figures only, reusing analysis/results/stem_sweep_*.csv (~4 min)
 ```
+
+Tables are written as LaTeX rows to `analysis/out/tables/tab_<label>.tex`, named after the paper's `\label{tab:<label>}`; figures go to `analysis/out/figures/` under the paper's file names. Intermediate CSVs are in `analysis/results/`.
+
+| Script | Exhibits |
+|---|---|
+| `stem_sweep.py <llm>` | All C(10,k) training groups, k=1..4: probes, single-statistic ATC, judged samples and PPI |
+| `section_3_results.py` | Figure `MATH_test_max_entropy`; `tab:single_stat_summary`, `tab:entropy_analysis`, `tab:entropy_analysis_appendix`, `tab:sensitivity_auroc` |
+| `section_4_results.py` | Figures `fig1_example`, `fig_all_models(_mid)`, `all_llm_accuracy`, `drift_single`, `comparison_auroc`; `tab:apriori_results`, `tab:es_vs_atc`, `tab:ablations`, `tab:hindsight`, `tab:truncation`, `tab:labels`, `tab:drift`, `tab:change` |
+| `section_5_results.py` | `tab:loco_results`, `tab:within_cat`, `tab:feature_monitoring_agreement` |
+| `appendix_results.py` | `tab:api_stem`, `tab:api_sweep`, `tab:quant`, `tab:regctrl`, `tab:qa`, `tab:topk_ablation` |
+| `robustness.py` | Runs behind numbers quoted only in the text: extra seeds, truncated responses removed, trajectory features and the alternative-probe search |
+| `text_numbers.py` | Every number quoted in the text, by section, to `out/numbers.json` |
+| `topk_cache.py <bench>` | Full-vocabulary entropy for `tab:topk_ablation` (GPU; already cached in `analysis/cache` for the 2,048-cap run) |
 
 ## Models and Benchmarks
 
@@ -150,7 +162,7 @@ Each generation is summarized into a 17-dimensional feature vector:
 - **Entropy distribution summaries (10):** `mean`, `std`, `max`, `q10`, `q25`, `q50`, `q75`, `q90`, `skewness`, `kurtosis`.
 - **Uncertainty-quantification baselines (7):** `se_sum`, `nll_avg`, `nll_max`, `nll_sum`, `lntp`, `mtp`, `ppl`.
 
-Ablations train on subsets of these (e.g. entropy-only vs. entropy + UQ baselines).
+`lntp`, `mtp` and `ppl` are monotone transforms of `nll_avg` and `nll_max`, so the STEM probe uses the first 14 features; ablations train on subsets of these.
 
 ## Notes
 

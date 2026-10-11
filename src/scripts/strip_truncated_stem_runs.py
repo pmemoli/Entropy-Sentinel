@@ -12,9 +12,19 @@ EOS_TOKENS = {
 }
 
 
+ORIGINAL_MAX_LENGTH = 2048
+
+
 def is_truncated(item, eos_tokens):
     sequences = item["sequences"]
     return len(sequences) == 0 or sequences[-1] not in eos_tokens
+
+
+def is_truncated_at_original_length(item, eos_tokens):
+    return (
+        is_truncated(item, eos_tokens)
+        and len(item["sequences"]) < ORIGINAL_MAX_LENGTH
+    )
 
 
 def strip_suite(suite, result_path, dry_run):
@@ -23,7 +33,11 @@ def strip_suite(suite, result_path, dry_run):
 
     for path in sorted(glob.glob(f"{result_path}/{suite}/*.pt")):
         items = torch.load(path, weights_only=False)
-        kept = [item for item in items if not is_truncated(item, eos_tokens)]
+        kept = [
+            item
+            for item in items
+            if not is_truncated_at_original_length(item, eos_tokens)
+        ]
         total += len(items)
         removed += len(items) - len(kept)
 
